@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 $this->includeJsFile('automation.maintenance.js');
 
+echo '<link rel="stylesheet" href="modules/zabbix_automation/assets/css/automation.css">';
+
 echo (new CTag('h1', true, $data['title']));
 
 // ── Create Maintenance Form ───────────────────────────────────────────────────

@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 $this->includeJsFile('automation.dashboard.js');
 
+echo '<link rel="stylesheet" href="modules/zabbix_automation/assets/css/automation.css">';
+
 $page_title = new CTag('h1', true, $data['title']);
 
 $widget = (new CDiv())
