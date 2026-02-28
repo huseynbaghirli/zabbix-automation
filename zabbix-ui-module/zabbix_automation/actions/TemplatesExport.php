@@ -17,6 +17,10 @@ use CControllerResponseData;
  */
 class TemplatesExport extends CController {
 
+    protected function init(): void {
+        $this->disableCsrfValidation();
+    }
+
     protected function checkInput(): bool {
         $fields = [
             'templateids' => 'required|array',

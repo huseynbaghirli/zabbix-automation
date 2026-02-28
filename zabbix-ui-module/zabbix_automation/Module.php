@@ -11,6 +11,10 @@ use Zabbix\Core\CModule;
 
 class Module extends CModule {
 
+    public function getStylesheets(): array {
+        return ['assets/css/automation.css'];
+    }
+
     public function init(): void {
         $menu = APP::Component()->get('menu.main');
 

@@ -6,101 +6,101 @@ declare(strict_types=1);
  * @var array $data
  */
 
-echo (new CTag('h1', true, $data['title']));
+echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.css') . '</style>';
 
-// ── Description ──────────────────────────────────────────────────────────────
-echo (new CDiv([
-    _('Paste host definitions below (one JSON object per line or a JSON array). Choose an action and click Execute.'),
-]))->addClass('automation-description');
+$placeholder = json_encode([[
+    'host'         => 'server01',
+    'name'         => 'Server 01',
+    'ip'           => '192.168.1.10',
+    'port'         => '10050',
+    'group_ids'    => [2],
+    'template_ids' => [10001],
+]], JSON_PRETTY_PRINT);
 
-// ── Action selector ──────────────────────────────────────────────────────────
-$action_select = (new CSelect('bulk_action'))
-    ->addOptions(CSelect::createOptionsFromArray([
-        'create' => _('Create hosts'),
-        'update' => _('Update hosts'),
-        'delete' => _('Delete hosts'),
-    ]))
-    ->setFocused();
+?>
+<h1><?= htmlspecialchars($data['title']) ?></h1>
 
-// ── Group / Template helpers ──────────────────────────────────────────────────
-$group_list = (new CDiv())->addClass('automation-reference-list');
-$group_list->addItem((new CTag('strong', true, _('Available Host Groups (copy IDs):'))));
-$group_items = (new CDiv())->addClass('automation-reference-items');
-foreach ($data['groups'] as $group) {
-    $group_items->addItem(
-        (new CDiv(
-            (new CTag('code', true, $group['groupid']))->setAttribute('title', $group['name'])
-            . ' ' . htmlspecialchars($group['name'])
-        ))->addClass('automation-ref-item')
-    );
-}
-$group_list->addItem($group_items);
+<p class="automation-description">
+    <?= _('Paste host definitions below (one JSON object per line or a JSON array). Choose an action and click Execute.') ?>
+</p>
 
-$template_list = (new CDiv())->addClass('automation-reference-list');
-$template_list->addItem((new CTag('strong', true, _('Available Templates (copy IDs):'))));
-$tpl_items = (new CDiv())->addClass('automation-reference-items');
-foreach ($data['templates'] as $tpl) {
-    $tpl_items->addItem(
-        (new CDiv(
-            (new CTag('code', true, $tpl['templateid']))->setAttribute('title', $tpl['name'])
-            . ' ' . htmlspecialchars($tpl['name'])
-        ))->addClass('automation-ref-item')
-    );
-}
-$template_list->addItem($tpl_items);
+<div class="automation-two-col">
 
-// ── JSON input textarea ───────────────────────────────────────────────────────
-$placeholder = json_encode([
-    [
-        'host'         => 'server01',
-        'name'         => 'Server 01',
-        'ip'           => '192.168.1.10',
-        'port'         => '10050',
-        'group_ids'    => [2],
-        'template_ids' => [10001],
-    ],
-], JSON_PRETTY_PRINT);
+    <!-- ── Main: form ── -->
+    <div class="automation-section automation-col-main">
+        <h2 class="automation-section-title"><?= _('Host Definitions') ?></h2>
 
-$textarea = (new CTextArea('hosts_json'))
-    ->setWidth(ZBX_TEXTAREA_STANDARD_WIDTH)
-    ->setMaxlength(null)
-    ->setAttribute('rows', 20)
-    ->setAttribute('placeholder', $placeholder)
-    ->setAttribute('spellcheck', 'false');
+        <form id="automation-bulk-form">
 
-// ── Form ──────────────────────────────────────────────────────────────────────
-$form = (new CForm('post', 'zabbix.php'))
-    ->setAttribute('id', 'automation-bulk-form')
-    ->addItem([
-        (new CFormGrid())
-            ->addItem([
-                new CLabel(_('Action'), 'bulk_action'),
-                new CFormField($action_select),
-            ])
-            ->addItem([
-                new CLabel(_('Host definitions (JSON)')),
-                new CFormField($textarea),
-            ]),
-        (new CDiv([
-            (new CSubmit('execute', _('Execute')))
-                ->setAttribute('id', 'btn-bulk-execute'),
-        ]))->addClass('form-buttons'),
-    ]);
+            <div class="automation-form-row">
+                <label for="bulk_action"><?= _('Action') ?></label>
+                <select name="bulk_action" id="bulk_action" class="automation-select">
+                    <option value="create"><?= _('Create hosts') ?></option>
+                    <option value="update"><?= _('Update hosts') ?></option>
+                    <option value="delete"><?= _('Delete hosts') ?></option>
+                </select>
+            </div>
 
-// ── Results area ──────────────────────────────────────────────────────────────
-$results = (new CDiv())->setAttribute('id', 'bulk-results')->addClass('automation-results hidden');
+            <div class="automation-form-row">
+                <label><?= _('Host definitions (JSON)') ?></label>
+                <textarea
+                    name="hosts_json"
+                    id="hosts_json"
+                    class="automation-textarea"
+                    rows="18"
+                    spellcheck="false"
+                    placeholder="<?= htmlspecialchars($placeholder) ?>"
+                ></textarea>
+            </div>
 
-// ── Layout ────────────────────────────────────────────────────────────────────
-echo (new CDiv([
-    (new CDiv([
-        (new CTag('h2', true, _('Host Definitions')))->addClass('automation-section-title'),
-        $form,
-        $results,
-    ]))->addClass('automation-section automation-col-main'),
-    (new CDiv([
-        $group_list,
-        $template_list,
-    ]))->addClass('automation-section automation-col-side'),
-]))->addClass('automation-two-col');
+            <div class="form-buttons">
+                <button type="button" id="btn-bulk-execute" class="automation-btn"><?= _('Execute') ?></button>
+            </div>
 
-echo '<script>' . file_get_contents(__DIR__ . '/js/automation.bulk.hosts.js') . '</script>';
+        </form>
+
+        <div id="bulk-results" class="automation-results hidden"></div>
+    </div>
+
+    <!-- ── Side: reference lists ── -->
+    <div class="automation-section automation-col-side">
+
+        <div class="automation-reference-list">
+            <strong><?= _('Available Host Groups (click ID to copy):') ?></strong>
+            <div class="automation-reference-items">
+                <?php if ($data['groups']): ?>
+                    <?php foreach ($data['groups'] as $group): ?>
+                    <div class="automation-ref-item">
+                        <code><?= htmlspecialchars($group['groupid']) ?></code>
+                        <?= htmlspecialchars($group['name']) ?>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="automation-ref-item" style="color:#888"><?= _('No groups found') ?></div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="automation-reference-list">
+            <strong><?= _('Available Templates (click ID to copy):') ?></strong>
+            <div class="automation-reference-items">
+                <?php if ($data['templates']): ?>
+                    <?php foreach ($data['templates'] as $tpl): ?>
+                    <div class="automation-ref-item">
+                        <code><?= htmlspecialchars($tpl['templateid']) ?></code>
+                        <?= htmlspecialchars($tpl['name']) ?>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="automation-ref-item" style="color:#888"><?= _('No templates found') ?></div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+<?= file_get_contents(__DIR__ . '/js/automation.bulk.hosts.js') ?>
+</script>

@@ -18,6 +18,10 @@ use CControllerResponseData;
  */
 class TemplatesImport extends CController {
 
+    protected function init(): void {
+        $this->disableCsrfValidation();
+    }
+
     protected function checkInput(): bool {
         $fields = [
             'content' => 'required|string',

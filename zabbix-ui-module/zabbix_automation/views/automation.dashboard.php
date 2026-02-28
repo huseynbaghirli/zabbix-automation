@@ -6,58 +6,52 @@ declare(strict_types=1);
  * @var array $data
  */
 
-$page_title = new CTag('h1', true, $data['title']);
+echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.css') . '</style>';
 
-$widget = (new CDiv())
-    ->addClass('automation-dashboard');
+?>
+<h1><?= htmlspecialchars($data['title']) ?></h1>
 
-// ── Summary Cards ──────────────────────────────────────────────────────────
-$cards = (new CDiv())->addClass('automation-cards');
+<div class="automation-dashboard">
 
-$stat_items = [
-    ['label' => _('Hosts'),             'value' => $data['hosts_count'],       'icon' => 'zi-host'],
-    ['label' => _('Templates'),         'value' => $data['templates_count'],   'icon' => 'zi-template'],
-    ['label' => _('Host Groups'),       'value' => $data['hostgroups_count'],  'icon' => 'zi-folder'],
-    ['label' => _('Maintenances'),      'value' => $data['maintenance_count'], 'icon' => 'zi-maintenance'],
-];
+    <!-- ── Summary cards ── -->
+    <div class="automation-cards">
+        <?php
+        $stats = [
+            [_('Hosts'),        $data['hosts_count']],
+            [_('Templates'),    $data['templates_count']],
+            [_('Host Groups'),  $data['hostgroups_count']],
+            [_('Maintenances'), $data['maintenance_count']],
+        ];
+        foreach ($stats as [$label, $value]):
+        ?>
+        <div class="automation-card">
+            <div class="automation-card-value"><?= (int) $value ?></div>
+            <div class="automation-card-label"><?= htmlspecialchars($label) ?></div>
+        </div>
+        <?php endforeach; ?>
+    </div>
 
-foreach ($stat_items as $stat) {
-    $card = (new CDiv([
-        (new CDiv())->addClass('automation-card-icon ' . $stat['icon']),
-        (new CDiv($stat['value']))->addClass('automation-card-value'),
-        (new CDiv($stat['label']))->addClass('automation-card-label'),
-    ]))->addClass('automation-card');
-    $cards->addItem($card);
-}
+    <!-- ── Quick links ── -->
+    <div class="automation-section">
+        <h2 class="automation-section-title"><?= _('Quick Links') ?></h2>
+        <div class="automation-quick-links">
 
-$widget->addItem($cards);
+            <div class="automation-quick-link-item">
+                <a href="zabbix.php?action=automation.bulk.hosts" class="automation-link-title"><?= _('Bulk Host Manager') ?></a>
+                <div class="automation-link-desc"><?= _('Create, update, or delete multiple hosts at once.') ?></div>
+            </div>
 
-// ── Quick Links ─────────────────────────────────────────────────────────────
-$quick_links = (new CDiv())->addClass('automation-quick-links');
+            <div class="automation-quick-link-item">
+                <a href="zabbix.php?action=automation.templates" class="automation-link-title"><?= _('Template Sync') ?></a>
+                <div class="automation-link-desc"><?= _('Export or import Zabbix templates as JSON/XML.') ?></div>
+            </div>
 
-$links = [
-    ['label' => _('Bulk Host Manager'),  'action' => 'automation.bulk.hosts',  'desc' => _('Create, update, or delete multiple hosts at once.')],
-    ['label' => _('Template Sync'),      'action' => 'automation.templates',   'desc' => _('Export or import Zabbix templates as JSON/XML.')],
-    ['label' => _('Maintenance Manager'),'action' => 'automation.maintenance', 'desc' => _('Schedule maintenance windows for hosts or host groups.')],
-];
+            <div class="automation-quick-link-item">
+                <a href="zabbix.php?action=automation.maintenance" class="automation-link-title"><?= _('Maintenance Manager') ?></a>
+                <div class="automation-link-desc"><?= _('Schedule maintenance windows for hosts or host groups.') ?></div>
+            </div>
 
-foreach ($links as $link) {
-    $quick_links->addItem(
-        (new CDiv([
-            (new CLink($link['label'], (new CUrl('zabbix.php'))->setArgument('action', $link['action'])))->addClass('automation-link-title'),
-            (new CDiv($link['desc']))->addClass('automation-link-desc'),
-        ]))->addClass('automation-quick-link-item')
-    );
-}
+        </div>
+    </div>
 
-$widget->addItem(
-    (new CDiv([
-        (new CTag('h2', true, _('Quick Links')))->addClass('automation-section-title'),
-        $quick_links,
-    ]))->addClass('automation-section')
-);
-
-echo $page_title;
-echo $widget;
-
-echo '<script>' . file_get_contents(__DIR__ . '/js/automation.dashboard.js') . '</script>';
+</div>

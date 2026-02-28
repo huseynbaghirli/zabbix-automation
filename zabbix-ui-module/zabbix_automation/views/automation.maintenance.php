@@ -6,136 +6,167 @@ declare(strict_types=1);
  * @var array $data
  */
 
-echo (new CTag('h1', true, $data['title']));
+echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.css') . '</style>';
 
-// ── Create Maintenance Form ───────────────────────────────────────────────────
-$now = time();
+$now  = date('Y-m-d\TH:i', time());
+$plus = date('Y-m-d\TH:i', time() + 3600);
 
-$hosts_multiselect = (new CMultiSelect([
-    'name'        => 'host_ids[]',
-    'object_name' => 'hosts',
-    'data'        => [],
-    'popup'       => [
-        'parameters' => [
-            'srctbl'  => 'hosts',
-            'srcfld1' => 'hostid',
-            'dstfrm'  => 'maintenance-form',
-            'dstfld1' => 'host_ids_',
-        ],
-    ],
-]))->setWidth(ZBX_TEXTAREA_STANDARD_WIDTH);
+?>
+<h1><?= htmlspecialchars($data['title']) ?></h1>
 
-$groups_multiselect = (new CMultiSelect([
-    'name'        => 'group_ids[]',
-    'object_name' => 'hostgroups',
-    'data'        => [],
-    'popup'       => [
-        'parameters' => [
-            'srctbl'  => 'host_groups',
-            'srcfld1' => 'groupid',
-            'dstfrm'  => 'maintenance-form',
-            'dstfld1' => 'group_ids_',
-        ],
-    ],
-]))->setWidth(ZBX_TEXTAREA_STANDARD_WIDTH);
+<div class="automation-two-col">
 
-$type_select = (new CSelect('maintenance_type'))
-    ->addOptions(CSelect::createOptionsFromArray([
-        0 => _('With data collection'),
-        1 => _('No data collection'),
-    ]));
+    <!-- ── Create form ── -->
+    <div class="automation-section">
+        <h2 class="automation-section-title"><?= _('Create Maintenance Window') ?></h2>
 
-$form = (new CForm('post', 'zabbix.php'))
-    ->setAttribute('id', 'maintenance-form')
-    ->addItem([
-        (new CFormGrid())
-            ->addItem([
-                (new CLabel(_('Name'), 'maintenance_name'))->setAsteriskMark(),
-                new CFormField(
-                    (new CTextBox('maintenance_name'))->setWidth(ZBX_TEXTAREA_STANDARD_WIDTH)
-                ),
-            ])
-            ->addItem([
-                new CLabel(_('Description'), 'maintenance_description'),
-                new CFormField(
-                    (new CTextArea('maintenance_description'))->setWidth(ZBX_TEXTAREA_STANDARD_WIDTH)->setAttribute('rows', 3)
-                ),
-            ])
-            ->addItem([
-                new CLabel(_('Type'), 'maintenance_type'),
-                new CFormField($type_select),
-            ])
-            ->addItem([
-                (new CLabel(_('Active since'), 'active_since'))->setAsteriskMark(),
-                new CFormField(
-                    (new CDateSelector('active_since', date(ZBX_DATE_TIME, $now)))
-                        ->setDateFormat(ZBX_DATE_TIME)
-                        ->setAttribute('placeholder', ZBX_DATE_TIME)
-                ),
-            ])
-            ->addItem([
-                (new CLabel(_('Active till'), 'active_till'))->setAsteriskMark(),
-                new CFormField(
-                    (new CDateSelector('active_till', date(ZBX_DATE_TIME, $now + 3600)))
-                        ->setDateFormat(ZBX_DATE_TIME)
-                        ->setAttribute('placeholder', ZBX_DATE_TIME)
-                ),
-            ])
-            ->addItem([
-                new CLabel(_('Hosts'), 'host_ids__ms'),
-                new CFormField($hosts_multiselect),
-            ])
-            ->addItem([
-                new CLabel(_('Host Groups'), 'group_ids__ms'),
-                new CFormField($groups_multiselect),
-            ]),
-        (new CDiv([
-            (new CSubmit('create_maintenance', _('Create Maintenance')))->setAttribute('id', 'btn-create-maintenance'),
-        ]))->addClass('form-buttons'),
-    ]);
+        <form id="maintenance-form">
 
-$create_result = (new CDiv())->setAttribute('id', 'maintenance-result')->addClass('automation-results hidden');
+            <div class="automation-form-row">
+                <label for="maintenance_name" class="required"><?= _('Name') ?></label>
+                <input
+                    type="text"
+                    name="maintenance_name"
+                    id="maintenance_name"
+                    class="automation-input"
+                    placeholder="<?= htmlspecialchars(_('Maintenance window name')) ?>"
+                >
+            </div>
 
-// ── Existing Maintenances Table ───────────────────────────────────────────────
-$table = (new CTableInfo())
-    ->setHeader([
-        _('Name'),
-        _('Type'),
-        _('Active since'),
-        _('Active till'),
-        _('Hosts'),
-        _('Groups'),
-    ]);
+            <div class="automation-form-row">
+                <label for="maintenance_description"><?= _('Description') ?></label>
+                <textarea
+                    name="maintenance_description"
+                    id="maintenance_description"
+                    class="automation-textarea"
+                    rows="3"
+                ></textarea>
+            </div>
 
-foreach ($data['maintenances'] as $m) {
-    $type_label = ((int)$m['maintenance_type'] === 0)
-        ? (new CSpan(_('With data')))->addClass('status-green')
-        : (new CSpan(_('No data')))->addClass('status-grey');
+            <div class="automation-form-row">
+                <label for="maintenance_type"><?= _('Type') ?></label>
+                <select name="maintenance_type" id="maintenance_type" class="automation-select">
+                    <option value="0"><?= _('With data collection') ?></option>
+                    <option value="1"><?= _('No data collection') ?></option>
+                </select>
+            </div>
 
-    $host_names  = array_column($m['hosts'], 'name');
-    $group_names = array_column($m['groups'], 'name');
+            <div class="automation-form-row">
+                <label for="active_since" class="required"><?= _('Active since') ?></label>
+                <input
+                    type="datetime-local"
+                    name="active_since"
+                    id="active_since"
+                    class="automation-input"
+                    value="<?= htmlspecialchars($now) ?>"
+                >
+            </div>
 
-    $table->addRow([
-        $m['name'],
-        $type_label,
-        date(ZBX_DATE_TIME, (int)$m['active_since']),
-        date(ZBX_DATE_TIME, (int)$m['active_till']),
-        $host_names  ? implode(', ', $host_names)  : '—',
-        $group_names ? implode(', ', $group_names) : '—',
-    ]);
-}
+            <div class="automation-form-row">
+                <label for="active_till" class="required"><?= _('Active till') ?></label>
+                <input
+                    type="datetime-local"
+                    name="active_till"
+                    id="active_till"
+                    class="automation-input"
+                    value="<?= htmlspecialchars($plus) ?>"
+                >
+            </div>
 
-// ── Layout ────────────────────────────────────────────────────────────────────
-echo (new CDiv([
-    (new CDiv([
-        (new CTag('h2', true, _('Create Maintenance Window')))->addClass('automation-section-title'),
-        $form,
-        $create_result,
-    ]))->addClass('automation-section'),
-    (new CDiv([
-        (new CTag('h2', true, _('Existing Maintenance Windows')))->addClass('automation-section-title'),
-        $table,
-    ]))->addClass('automation-section'),
-]));
+            <div class="automation-form-row">
+                <label for="host_ids"><?= _('Hosts') ?></label>
+                <div>
+                    <select
+                        name="host_ids[]"
+                        id="host_ids"
+                        class="automation-select"
+                        multiple
+                        size="7"
+                    >
+                        <?php foreach ($data['hosts'] as $host): ?>
+                        <option value="<?= htmlspecialchars($host['hostid']) ?>">
+                            <?= htmlspecialchars($host['name']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="automation-hint"><?= _('Hold Ctrl / Cmd to select multiple.') ?></div>
+                </div>
+            </div>
 
-echo '<script>' . file_get_contents(__DIR__ . '/js/automation.maintenance.js') . '</script>';
+            <div class="automation-form-row">
+                <label for="group_ids"><?= _('Host Groups') ?></label>
+                <div>
+                    <select
+                        name="group_ids[]"
+                        id="group_ids"
+                        class="automation-select"
+                        multiple
+                        size="7"
+                    >
+                        <?php foreach ($data['groups'] as $group): ?>
+                        <option value="<?= htmlspecialchars($group['groupid']) ?>">
+                            <?= htmlspecialchars($group['name']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="automation-hint"><?= _('Hold Ctrl / Cmd to select multiple.') ?></div>
+                </div>
+            </div>
+
+            <div class="form-buttons">
+                <button type="button" id="btn-create-maintenance" class="automation-btn">
+                    <?= _('Create Maintenance') ?>
+                </button>
+            </div>
+
+        </form>
+
+        <div id="maintenance-result" class="automation-results hidden"></div>
+    </div>
+
+    <!-- ── Existing maintenances ── -->
+    <div class="automation-section">
+        <h2 class="automation-section-title"><?= _('Existing Maintenance Windows') ?></h2>
+
+        <?php if ($data['maintenances']): ?>
+        <table class="automation-table">
+            <thead>
+                <tr>
+                    <th><?= _('Name') ?></th>
+                    <th><?= _('Type') ?></th>
+                    <th><?= _('Active since') ?></th>
+                    <th><?= _('Active till') ?></th>
+                    <th><?= _('Hosts') ?></th>
+                    <th><?= _('Groups') ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($data['maintenances'] as $m): ?>
+                <?php
+                    $type_html   = ((int) $m['maintenance_type'] === 0)
+                        ? '<span class="status-green">' . _('With data') . '</span>'
+                        : '<span class="status-grey">'  . _('No data')   . '</span>';
+                    $host_names  = array_column($m['hosts'],  'name');
+                    $group_names = array_column($m['groups'], 'name');
+                ?>
+                <tr>
+                    <td><?= htmlspecialchars($m['name']) ?></td>
+                    <td><?= $type_html ?></td>
+                    <td><?= htmlspecialchars(date('Y-m-d H:i', (int) $m['active_since'])) ?></td>
+                    <td><?= htmlspecialchars(date('Y-m-d H:i', (int) $m['active_till']))  ?></td>
+                    <td><?= $host_names  ? htmlspecialchars(implode(', ', $host_names))  : '—' ?></td>
+                    <td><?= $group_names ? htmlspecialchars(implode(', ', $group_names)) : '—' ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php else: ?>
+        <p style="color:#888;font-style:italic"><?= _('No maintenance windows found.') ?></p>
+        <?php endif; ?>
+    </div>
+
+</div>
+
+<script>
+<?= file_get_contents(__DIR__ . '/js/automation.maintenance.js') ?>
+</script>

@@ -22,6 +22,10 @@ use CControllerResponseData;
  */
 class MaintenanceSubmit extends CController {
 
+    protected function init(): void {
+        $this->disableCsrfValidation();
+    }
+
     protected function checkInput(): bool {
         $fields = [
             'name'         => 'required|string|not_empty',
