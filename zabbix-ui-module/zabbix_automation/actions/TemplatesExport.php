@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\ZabbixAutomation\Actions;
 
+use API;
 use CController;
 use CControllerResponseData;
+use CRoleHelper;
 
 /**
  * Exports selected templates as JSON (Zabbix 7.0+ format) or XML (≤6.4).
@@ -43,12 +45,8 @@ class TemplatesExport extends CController {
         $template_ids = $this->getInput('templateids', []);
         $format       = $this->getInput('format', 'json');
 
-        $export_format = ($format === 'xml')
-            ? CExportWriterXml::FORMAT
-            : CExportWriterJSON::FORMAT;
-
         $content = API::Configuration()->export([
-            'format'  => $export_format,
+            'format'  => $format,
             'options' => [
                 'templates' => $template_ids,
             ],

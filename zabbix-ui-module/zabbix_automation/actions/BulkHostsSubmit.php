@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\ZabbixAutomation\Actions;
 
+use API;
 use CController;
 use CControllerResponseData;
+use CRoleHelper;
 
 /**
  * Handles AJAX submission of the Bulk Host Manager form.

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\ZabbixAutomation\Actions;
 
+use API;
 use CController;
 use CControllerResponseData;
+use CRoleHelper;
 
 /**
  * Imports templates from uploaded JSON or XML content.
@@ -58,13 +60,9 @@ class TemplatesImport extends CController {
 
         $rules = $this->getInput('rules', $default_rules);
 
-        $import_format = ($format === 'xml')
-            ? CImportReaderXml::FORMAT
-            : CImportReaderJSON::FORMAT;
-
         try {
             $result = API::Configuration()->import([
-                'format'  => $import_format,
+                'format'  => $format,
                 'source'  => $content,
                 'rules'   => $rules,
             ]);
