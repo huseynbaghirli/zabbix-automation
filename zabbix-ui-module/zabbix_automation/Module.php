@@ -12,6 +12,9 @@ use Zabbix\Core\CModule;
 class Module extends CModule {
 
     public function init(): void {
+        APP::Component()->get('pageHeader')
+            ->addCssFile('modules/zabbix_automation/assets/css/automation.css');
+
         $menu = APP::Component()->get('menu.main');
 
         $menu->add(

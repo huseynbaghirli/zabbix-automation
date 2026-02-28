@@ -8,8 +8,6 @@ declare(strict_types=1);
 
 $this->includeJsFile('automation.templates.js');
 
-echo '<link rel="stylesheet" href="modules/zabbix_automation/assets/css/automation.css">';
-
 echo (new CTag('h1', true, $data['title']));
 
 // ── Export panel ──────────────────────────────────────────────────────────────
