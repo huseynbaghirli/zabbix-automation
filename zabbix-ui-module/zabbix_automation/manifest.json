@@ -1,0 +1,48 @@
+{
+    "manifest_version": 2.0,
+    "id": "zabbix_automation",
+    "name": "Zabbix Automation",
+    "namespace": "ZabbixAutomation",
+    "version": "1.0.0",
+    "author": "zabbix-automation",
+    "description": "Automation tools for bulk host management, template sync, and maintenance windows.",
+    "url": "",
+    "actions": {
+        "automation.dashboard": {
+            "class": "Actions\\Dashboard",
+            "layout": "layout.htmlpage",
+            "view": "automation.dashboard"
+        },
+        "automation.bulk.hosts": {
+            "class": "Actions\\BulkHosts",
+            "layout": "layout.htmlpage",
+            "view": "automation.bulk.hosts"
+        },
+        "automation.bulk.hosts.submit": {
+            "class": "Actions\\BulkHostsSubmit",
+            "layout": "layout.json"
+        },
+        "automation.templates": {
+            "class": "Actions\\Templates",
+            "layout": "layout.htmlpage",
+            "view": "automation.templates"
+        },
+        "automation.templates.export": {
+            "class": "Actions\\TemplatesExport",
+            "layout": "layout.json"
+        },
+        "automation.templates.import": {
+            "class": "Actions\\TemplatesImport",
+            "layout": "layout.json"
+        },
+        "automation.maintenance": {
+            "class": "Actions\\Maintenance",
+            "layout": "layout.htmlpage",
+            "view": "automation.maintenance"
+        },
+        "automation.maintenance.submit": {
+            "class": "Actions\\MaintenanceSubmit",
+            "layout": "layout.json"
+        }
+    }
+}

@@ -1,0 +1,187 @@
+/* ============================================================
+   Zabbix Automation Module — Stylesheet
+   ============================================================ */
+
+/* ── Layout helpers ──────────────────────────────────────── */
+.automation-dashboard,
+.automation-two-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 16px 0;
+}
+
+.automation-two-col {
+    flex-direction: row;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.automation-col-main  { flex: 1 1 600px; }
+.automation-col-side  { flex: 0 1 320px; }
+
+.automation-section {
+    background: var(--color-bg, #fff);
+    border: 1px solid var(--color-border, #d0d0d0);
+    border-radius: 4px;
+    padding: 20px 24px;
+    flex: 1 1 auto;
+}
+
+.automation-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--color-border, #d0d0d0);
+}
+
+/* ── Dashboard summary cards ─────────────────────────────── */
+.automation-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.automation-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-alt, #f7f7f7);
+    border: 1px solid var(--color-border, #d0d0d0);
+    border-radius: 6px;
+    padding: 20px 28px;
+    min-width: 140px;
+    flex: 1 1 140px;
+    text-align: center;
+}
+
+.automation-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary, #d40000);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.automation-card-label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary, #666);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ── Quick links ─────────────────────────────────────────── */
+.automation-quick-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.automation-quick-link-item {
+    padding: 12px 16px;
+    border: 1px solid var(--color-border, #d0d0d0);
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.automation-quick-link-item:hover {
+    background: var(--color-bg-alt, #f7f7f7);
+}
+
+.automation-link-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.automation-link-desc {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary, #666);
+    margin-top: 4px;
+}
+
+/* ── Description / reference panels ─────────────────────── */
+.automation-description {
+    padding: 10px 14px;
+    background: var(--color-info-bg, #e8f0fe);
+    border-left: 3px solid var(--color-info, #4a90d9);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 20px;
+    font-size: 0.875rem;
+}
+
+.automation-reference-list {
+    margin-bottom: 20px;
+}
+
+.automation-reference-items {
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border, #d0d0d0);
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 6px;
+    background: var(--color-bg-alt, #f7f7f7);
+}
+
+.automation-ref-item {
+    padding: 3px 0;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.automation-ref-item code {
+    background: var(--color-code-bg, #e0e0e0);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    user-select: all;
+}
+
+/* ── Results / output area ───────────────────────────────── */
+.automation-results {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    border: 1px solid var(--color-border, #d0d0d0);
+    background: var(--color-bg-alt, #f7f7f7);
+}
+
+.automation-results.hidden {
+    display: none;
+}
+
+.automation-results.success {
+    background: var(--color-success-bg, #e6f7ee);
+    border-color: var(--color-success, #28a745);
+    color: var(--color-success-text, #155724);
+}
+
+.automation-results.error {
+    background: var(--color-danger-bg, #fdecea);
+    border-color: var(--color-danger, #d40000);
+    color: var(--color-danger-text, #721c24);
+}
+
+/* ── Status badges ───────────────────────────────────────── */
+.status-green { color: var(--color-success, #28a745); font-weight: 600; }
+.status-grey  { color: var(--color-text-secondary, #666); }
+
+/* ── Form buttons row ────────────────────────────────────── */
+.form-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border, #d0d0d0);
+}
