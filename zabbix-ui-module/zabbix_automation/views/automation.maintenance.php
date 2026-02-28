@@ -6,8 +6,6 @@ declare(strict_types=1);
  * @var array $data
  */
 
-$this->includeJsFile('automation.maintenance.js');
-
 echo (new CTag('h1', true, $data['title']));
 
 // ── Create Maintenance Form ───────────────────────────────────────────────────
@@ -139,3 +137,5 @@ echo (new CDiv([
         $table,
     ]))->addClass('automation-section'),
 ]));
+
+echo '<script>' . file_get_contents(__DIR__ . '/js/automation.maintenance.js') . '</script>';

@@ -6,8 +6,6 @@ declare(strict_types=1);
  * @var array $data
  */
 
-$this->includeJsFile('automation.bulk.hosts.js');
-
 echo (new CTag('h1', true, $data['title']));
 
 // ── Description ──────────────────────────────────────────────────────────────
@@ -104,3 +102,5 @@ echo (new CDiv([
         $template_list,
     ]))->addClass('automation-section automation-col-side'),
 ]))->addClass('automation-two-col');
+
+echo '<script>' . file_get_contents(__DIR__ . '/js/automation.bulk.hosts.js') . '</script>';

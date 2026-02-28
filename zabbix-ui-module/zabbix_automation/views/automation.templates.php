@@ -6,8 +6,6 @@ declare(strict_types=1);
  * @var array $data
  */
 
-$this->includeJsFile('automation.templates.js');
-
 echo (new CTag('h1', true, $data['title']));
 
 // ── Export panel ──────────────────────────────────────────────────────────────
@@ -101,3 +99,5 @@ echo (new CDiv([
         $import_result,
     ]))->addClass('automation-section'),
 ]))->addClass('automation-two-col');
+
+echo '<script>' . file_get_contents(__DIR__ . '/js/automation.templates.js') . '</script>';

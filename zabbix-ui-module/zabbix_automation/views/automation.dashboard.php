@@ -6,8 +6,6 @@ declare(strict_types=1);
  * @var array $data
  */
 
-$this->includeJsFile('automation.dashboard.js');
-
 $page_title = new CTag('h1', true, $data['title']);
 
 $widget = (new CDiv())
@@ -61,3 +59,5 @@ $widget->addItem(
 
 echo $page_title;
 echo $widget;
+
+echo '<script>' . file_get_contents(__DIR__ . '/js/automation.dashboard.js') . '</script>';
