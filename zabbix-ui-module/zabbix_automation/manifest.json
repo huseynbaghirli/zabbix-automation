@@ -8,39 +8,39 @@
     "description": "Automation tools for bulk host management, template sync, and maintenance windows.",
     "actions": {
         "automation.dashboard": {
-            "class": "Actions\\Dashboard",
+            "class": "Dashboard",
             "layout": "layout.htmlpage",
             "view": "automation.dashboard"
         },
         "automation.bulk.hosts": {
-            "class": "Actions\\BulkHosts",
+            "class": "BulkHosts",
             "layout": "layout.htmlpage",
             "view": "automation.bulk.hosts"
         },
         "automation.bulk.hosts.submit": {
-            "class": "Actions\\BulkHostsSubmit",
+            "class": "BulkHostsSubmit",
             "layout": "layout.json"
         },
         "automation.templates": {
-            "class": "Actions\\Templates",
+            "class": "Templates",
             "layout": "layout.htmlpage",
             "view": "automation.templates"
         },
         "automation.templates.export": {
-            "class": "Actions\\TemplatesExport",
+            "class": "TemplatesExport",
             "layout": "layout.json"
         },
         "automation.templates.import": {
-            "class": "Actions\\TemplatesImport",
+            "class": "TemplatesImport",
             "layout": "layout.json"
         },
         "automation.maintenance": {
-            "class": "Actions\\Maintenance",
+            "class": "Maintenance",
             "layout": "layout.htmlpage",
             "view": "automation.maintenance"
         },
         "automation.maintenance.submit": {
-            "class": "Actions\\MaintenanceSubmit",
+            "class": "MaintenanceSubmit",
             "layout": "layout.json"
         }
     }
