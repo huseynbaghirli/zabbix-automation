@@ -7,7 +7,6 @@ namespace Modules\ZabbixAutomation\Actions;
 use API;
 use CController;
 use CControllerResponseData;
-use CRoleHelper;
 
 class BulkHosts extends CController {
 
@@ -20,7 +19,7 @@ class BulkHosts extends CController {
     }
 
     protected function checkPermissions(): bool {
-        return $this->checkAccess(CRoleHelper::UI_DEFAULT_ACCESS);
+        return $this->getUserType() >= USER_TYPE_ZABBIX_USER;
     }
 
     protected function doAction(): void {

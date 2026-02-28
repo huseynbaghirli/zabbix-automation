@@ -7,7 +7,6 @@ namespace Modules\ZabbixAutomation\Actions;
 use API;
 use CController;
 use CControllerResponseData;
-use CRoleHelper;
 
 /**
  * Exports selected templates as JSON (Zabbix 7.0+ format) or XML (≤6.4).
@@ -38,7 +37,7 @@ class TemplatesExport extends CController {
     }
 
     protected function checkPermissions(): bool {
-        return $this->checkAccess(CRoleHelper::UI_DEFAULT_ACCESS);
+        return $this->getUserType() >= USER_TYPE_ZABBIX_USER;
     }
 
     protected function doAction(): void {
