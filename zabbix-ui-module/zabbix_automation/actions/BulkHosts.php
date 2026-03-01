@@ -62,7 +62,7 @@ class BulkHosts extends CController {
     }
 
     private function handleSubmit(): void {
-        $action     = (string) ($this->getInput('action', ''));
+        $action     = (string) ($this->getInput('host_action', ''));
         $hosts_json = (string) ($this->getInput('hosts_json', '[]'));
         $hosts      = json_decode($hosts_json, true);
 
