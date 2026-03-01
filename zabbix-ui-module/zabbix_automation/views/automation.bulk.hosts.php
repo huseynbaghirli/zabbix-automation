@@ -17,14 +17,20 @@ echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.cs
 <script type="application/json" id="js-proxies"><?= json_encode(array_values($data['proxies']),    JSON_UNESCAPED_UNICODE) ?></script>
 
 <?php
-// Embed CSRF token so JS can include it in AJAX requests.
-// CCsrfTokenHelper is available in Zabbix 7.x; older versions may not have it.
+// Embed CSRF token for AJAX request (needed when opcache holds an old
+// version of BulkHostsSubmit that still runs CSRF validation).
+// Zabbix 7.x validates _csrf_token against CCsrfTokenHelper::get('zabbix.php').
 $csrf_token = '';
 if (class_exists('CCsrfTokenHelper')) {
-    try { $csrf_token = CCsrfTokenHelper::get('automation.bulk.hosts.submit'); } catch (\Throwable $e) {}
+    foreach (['zabbix.php', '', 'automation.bulk.hosts.submit'] as $_ctx) {
+        try {
+            $csrf_token = CCsrfTokenHelper::get($_ctx);
+            if ($csrf_token !== '') break;
+        } catch (\Throwable $e) {}
+    }
 }
 ?>
-<input type="hidden" id="zbx-csrf-token" value="<?= htmlspecialchars($csrf_token) ?>">
+<input type="hidden" id="zbx-csrf-token" name="_csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
 
 <div class="automation-section">
 

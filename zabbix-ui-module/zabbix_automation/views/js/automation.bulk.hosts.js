@@ -465,11 +465,11 @@
         fd.append('action',     'create');
         fd.append('hosts_json', JSON.stringify(payload));
 
-        // Include CSRF token if embedded in the page
-        const csrfEl = document.getElementById('zbx-csrf-token');
-        if (csrfEl && csrfEl.value) {
-            fd.append('_csrf_token', csrfEl.value);
-        }
+        // CSRF token — try multiple sources Zabbix may embed on the page
+        const csrfToken =
+            document.querySelector('input[name="_csrf_token"]')?.value ||   // any Zabbix form
+            document.getElementById('zbx-csrf-token')?.value || '';         // our own hidden field
+        if (csrfToken) fd.append('_csrf_token', csrfToken);
 
         try {
             const resp = await fetch('zabbix.php?action=automation.bulk.hosts.submit', {
@@ -482,13 +482,18 @@
             try {
                 data = JSON.parse(rawText);
             } catch (parseErr) {
-                // Server returned HTML — PHP opcache serving old file (most common cause)
+                // Server returned HTML — show diagnostic so we know the exact cause
+                const textPreview = rawText
+                    .replace(/<script[\s\S]*?<\/script>/gi, '')
+                    .replace(/<style[\s\S]*?<\/style>/gi, '')
+                    .replace(/<[^>]+>/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .slice(0, 500);
                 showResult(result, 'error',
-                    'Server error: PHP returned HTML instead of JSON.\n\n' +
-                    'Fix (run on server as root):\n' +
-                    '  systemctl restart php-fpm   # or apache2/nginx\n\n' +
-                    'Then reload this page and try again.\n' +
-                    '(Module disable/enable is not enough — PHP opcache must be cleared.)');
+                    'HTTP ' + resp.status +
+                    (resp.redirected ? ' → ' + resp.url : '') +
+                    '\n\nServer response:\n' + (textPreview || '(empty)'));
                 return;
             }
 
