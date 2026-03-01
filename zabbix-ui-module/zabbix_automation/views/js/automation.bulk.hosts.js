@@ -462,7 +462,7 @@
         }));
 
         const fd = new FormData();
-        fd.append('action', 'create');
+        fd.append('host_action', 'create');
         fd.append('hosts_json', JSON.stringify(payload));
 
         const csrfToken = document.getElementById('zbx-csrf-token')?.value || '';

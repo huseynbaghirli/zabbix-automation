@@ -13,24 +13,22 @@ use CControllerResponseData;
  *
  * POST fields (multipart/form-data):
  *   _csrf_token  - Zabbix CSRF token (generated with action name as context)
- *   action       - "create" | "update" | "delete"
+ *   host_action  - "create" | "update" | "delete"
  *   hosts_json   - JSON array of host definition objects
+ *
+ * NOTE: field is named 'host_action', not 'action', to avoid colliding with
+ * Zabbix's own 'action' routing parameter in $_REQUEST.
  */
 class BulkHostsSubmit extends CController {
 
-    /**
-     * init() is called from the constructor, before run() performs CSRF validation.
-     * Calling disableCsrfValidation() here bypasses the token check entirely.
-     * We also send a valid token from the view as a fallback for cached old code.
-     */
     protected function init(): void {
         $this->disableCsrfValidation();
     }
 
     protected function checkInput(): bool {
         $fields = [
-            'action'     => 'required|string|in create,update,delete',
-            'hosts_json' => 'required|string',
+            'host_action' => 'required|string|in create,update,delete',
+            'hosts_json'  => 'required|string',
         ];
 
         $ret = $this->validateInput($fields);
@@ -51,7 +49,7 @@ class BulkHostsSubmit extends CController {
     }
 
     protected function doAction(): void {
-        $action     = $this->getInput('action');
+        $action     = $this->getInput('host_action');
         $hosts_json = $this->getInput('hosts_json', '[]');
         $hosts      = json_decode($hosts_json, true);
 
