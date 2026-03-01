@@ -462,16 +462,14 @@
         }));
 
         const fd = new FormData();
-        fd.append('host_action', 'create');
+        fd.append('action', 'create');
         fd.append('hosts_json', JSON.stringify(payload));
 
-        // CSRF token: generated server-side with context='automation.bulk.hosts.submit'
-        // (Zabbix module controllers check: CCsrfTokenHelper::check(token, action_name))
         const csrfToken = document.getElementById('zbx-csrf-token')?.value || '';
         if (csrfToken) fd.append('_csrf_token', csrfToken);
 
         try {
-            const resp = await fetch('zabbix.php?action=automation.bulk.hosts', {
+            const resp = await fetch('zabbix.php?action=automation.bulk.hosts.submit', {
                 method: 'POST',
                 body:   fd,
             });
