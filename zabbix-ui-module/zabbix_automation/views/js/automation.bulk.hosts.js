@@ -465,10 +465,9 @@
         fd.append('action',     'create');
         fd.append('hosts_json', JSON.stringify(payload));
 
-        // CSRF token — try multiple sources Zabbix may embed on the page
-        const csrfToken =
-            document.querySelector('input[name="_csrf_token"]')?.value ||   // any Zabbix form
-            document.getElementById('zbx-csrf-token')?.value || '';         // our own hidden field
+        // CSRF token: generated server-side with context='automation.bulk.hosts.submit'
+        // (Zabbix module controllers check: CCsrfTokenHelper::check(token, action_name))
+        const csrfToken = document.getElementById('zbx-csrf-token')?.value || '';
         if (csrfToken) fd.append('_csrf_token', csrfToken);
 
         try {

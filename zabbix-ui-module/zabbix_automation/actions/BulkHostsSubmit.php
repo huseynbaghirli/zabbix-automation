@@ -11,12 +11,18 @@ use CControllerResponseData;
 /**
  * Handles AJAX submission of the Bulk Host Manager form.
  *
- * POST params (multipart/form-data):
- *   action     - "create" | "update" | "delete"
- *   hosts_json - JSON-encoded array of host definition objects
+ * POST fields (multipart/form-data):
+ *   _csrf_token  - Zabbix CSRF token (generated with action name as context)
+ *   action       - "create" | "update" | "delete"
+ *   hosts_json   - JSON array of host definition objects
  */
 class BulkHostsSubmit extends CController {
 
+    /**
+     * init() is called from the constructor, before run() performs CSRF validation.
+     * Calling disableCsrfValidation() here bypasses the token check entirely.
+     * We also send a valid token from the view as a fallback for cached old code.
+     */
     protected function init(): void {
         $this->disableCsrfValidation();
     }
@@ -33,7 +39,7 @@ class BulkHostsSubmit extends CController {
             $this->setResponse(new CControllerResponseData([
                 'main_block' => json_encode([
                     'error' => ['title' => _('Invalid input'), 'messages' => []],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ]));
         }
 
@@ -47,14 +53,13 @@ class BulkHostsSubmit extends CController {
     protected function doAction(): void {
         $action     = $this->getInput('action');
         $hosts_json = $this->getInput('hosts_json', '[]');
-
-        $hosts = json_decode($hosts_json, true);
+        $hosts      = json_decode($hosts_json, true);
 
         if (!is_array($hosts)) {
             $this->setResponse(new CControllerResponseData([
                 'main_block' => json_encode([
                     'error' => ['title' => _('Invalid JSON in hosts_json'), 'messages' => []],
-                ]),
+                ], JSON_THROW_ON_ERROR),
             ]));
             return;
         }
@@ -62,7 +67,7 @@ class BulkHostsSubmit extends CController {
         $result = ['created' => 0, 'updated' => 0, 'deleted' => 0, 'errors' => []];
 
         foreach ($hosts as $host_data) {
-            $host_name = $host_data['host'] ?? '';
+            $host_name = trim((string) ($host_data['host'] ?? ''));
 
             if ($host_name === '') {
                 $result['errors'][] = _('Host name is required.');
@@ -71,49 +76,77 @@ class BulkHostsSubmit extends CController {
 
             try {
                 $existing = API::Host()->get([
-                    'output' => ['hostid'],
-                    'filter' => ['host' => $host_name],
+                    'output'      => ['hostid'],
+                    'filter'      => ['host' => $host_name],
+                    'searchLimit' => 1,
                 ]);
 
                 switch ($action) {
                     case 'create':
                         if ($existing) {
-                            $result['errors'][] = sprintf(_('Host "%s" already exists, skipped.'), $host_name);
+                            $result['errors'][] = sprintf(
+                                _('Host "%s" already exists — skipped.'), $host_name
+                            );
+                            break;
+                        }
+
+                        // Build groups array (at least one is required by the Zabbix API)
+                        $group_ids = array_filter(
+                            array_map('intval', (array) ($host_data['group_ids'] ?? []))
+                        );
+
+                        if (!$group_ids) {
+                            $result['errors'][] = sprintf(
+                                _('Host "%s" skipped: at least one host group is required.'), $host_name
+                            );
                             break;
                         }
 
                         $create = [
                             'host'       => $host_name,
-                            'name'       => $host_data['name'] ?? $host_name,
-                            'interfaces' => [[
-                                'type'  => 1,
-                                'main'  => 1,
-                                'useip' => 1,
-                                'ip'    => $host_data['ip'] ?? '127.0.0.1',
-                                'dns'   => '',
-                                'port'  => $host_data['port'] ?? '10050',
-                            ]],
-                            'groups'    => array_map(
+                            'name'       => $host_name,          // visible name = technical name
+                            'status'     => HOST_STATUS_MONITORED,
+                            'groups'     => array_values(array_map(
                                 fn($gid) => ['groupid' => (string) $gid],
-                                (array) ($host_data['group_ids'] ?? [])
-                            ),
-                            'templates' => array_map(
-                                fn($tid) => ['templateid' => (string) $tid],
-                                (array) ($host_data['template_ids'] ?? [])
-                            ),
+                                $group_ids
+                            )),
+                            'interfaces' => [[
+                                'type'  => INTERFACE_TYPE_AGENT,
+                                'main'  => INTERFACE_PRIMARY,
+                                'useip' => INTERFACE_USE_IP,
+                                'ip'    => (string) ($host_data['ip']   ?? '127.0.0.1'),
+                                'dns'   => '',
+                                'port'  => (string) ($host_data['port'] ?? '10050'),
+                            ]],
                         ];
 
-                        // Proxy (Zabbix 7.0+ uses proxyid; ≤6.x uses proxy_hostid)
-                        if (!empty($host_data['proxy_id'])) {
-                            $create['proxyid'] = (string) $host_data['proxy_id'];
+                        // Templates (optional)
+                        $template_ids = array_filter(
+                            array_map('intval', (array) ($host_data['template_ids'] ?? []))
+                        );
+                        if ($template_ids) {
+                            $create['templates'] = array_values(array_map(
+                                fn($tid) => ['templateid' => (string) $tid],
+                                $template_ids
+                            ));
+                        }
+
+                        // Proxy (Zabbix 7.x uses proxyid)
+                        $proxy_id = (int) ($host_data['proxy_id'] ?? 0);
+                        if ($proxy_id > 0) {
+                            $create['monitored_by'] = ZBX_MONITORED_BY_PROXY;
+                            $create['proxyid']      = (string) $proxy_id;
                         }
 
                         // Tags
                         if (!empty($host_data['tags']) && is_array($host_data['tags'])) {
-                            $create['tags'] = array_values(array_filter(
+                            $tags = array_values(array_filter(
                                 $host_data['tags'],
-                                fn($t) => !empty($t['tag'])
+                                fn($t) => isset($t['tag']) && $t['tag'] !== ''
                             ));
+                            if ($tags) {
+                                $create['tags'] = $tags;
+                            }
                         }
 
                         API::Host()->create($create);
@@ -122,32 +155,45 @@ class BulkHostsSubmit extends CController {
 
                     case 'update':
                         if (!$existing) {
-                            $result['errors'][] = sprintf(_('Host "%s" not found for update.'), $host_name);
+                            $result['errors'][] = sprintf(
+                                _('Host "%s" not found for update.'), $host_name
+                            );
                             break;
                         }
 
                         $upd = ['hostid' => $existing[0]['hostid']];
 
-                        if (isset($host_data['name'])) {
-                            $upd['name'] = $host_data['name'];
-                        }
-                        if (!empty($host_data['group_ids'])) {
-                            $upd['groups'] = array_map(
+                        $group_ids = array_filter(
+                            array_map('intval', (array) ($host_data['group_ids'] ?? []))
+                        );
+                        if ($group_ids) {
+                            $upd['groups'] = array_values(array_map(
                                 fn($g) => ['groupid' => (string) $g],
-                                $host_data['group_ids']
-                            );
+                                $group_ids
+                            ));
                         }
-                        if (!empty($host_data['template_ids'])) {
-                            $upd['templates'] = array_map(
+
+                        $template_ids = array_filter(
+                            array_map('intval', (array) ($host_data['template_ids'] ?? []))
+                        );
+                        if ($template_ids) {
+                            $upd['templates'] = array_values(array_map(
                                 fn($t) => ['templateid' => (string) $t],
-                                $host_data['template_ids']
-                            );
+                                $template_ids
+                            ));
                         }
-                        if (!empty($host_data['proxy_id'])) {
-                            $upd['proxyid'] = (string) $host_data['proxy_id'];
+
+                        $proxy_id = (int) ($host_data['proxy_id'] ?? 0);
+                        if ($proxy_id > 0) {
+                            $upd['monitored_by'] = ZBX_MONITORED_BY_PROXY;
+                            $upd['proxyid']      = (string) $proxy_id;
                         }
-                        if (!empty($host_data['tags'])) {
-                            $upd['tags'] = $host_data['tags'];
+
+                        if (!empty($host_data['tags']) && is_array($host_data['tags'])) {
+                            $upd['tags'] = array_values(array_filter(
+                                $host_data['tags'],
+                                fn($t) => isset($t['tag']) && $t['tag'] !== ''
+                            ));
                         }
 
                         API::Host()->update($upd);
@@ -156,7 +202,9 @@ class BulkHostsSubmit extends CController {
 
                     case 'delete':
                         if (!$existing) {
-                            $result['errors'][] = sprintf(_('Host "%s" not found for deletion.'), $host_name);
+                            $result['errors'][] = sprintf(
+                                _('Host "%s" not found for deletion.'), $host_name
+                            );
                             break;
                         }
 
@@ -165,12 +213,14 @@ class BulkHostsSubmit extends CController {
                         break;
                 }
             } catch (\Exception $e) {
-                $result['errors'][] = sprintf(_('Error processing "%s": %s'), $host_name, $e->getMessage());
+                $result['errors'][] = sprintf(
+                    _('Error on "%s": %s'), $host_name, $e->getMessage()
+                );
             }
         }
 
         $this->setResponse(new CControllerResponseData([
-            'main_block' => json_encode($result),
+            'main_block' => json_encode($result, JSON_THROW_ON_ERROR),
         ]));
     }
 }
