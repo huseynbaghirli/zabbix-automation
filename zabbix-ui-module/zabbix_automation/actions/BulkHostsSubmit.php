@@ -82,7 +82,7 @@ class BulkHostsSubmit extends CController {
                             break;
                         }
 
-                        API::Host()->create([
+                        $create = [
                             'host'       => $host_name,
                             'name'       => $host_data['name'] ?? $host_name,
                             'interfaces' => [[
@@ -94,14 +94,29 @@ class BulkHostsSubmit extends CController {
                                 'port'  => $host_data['port'] ?? '10050',
                             ]],
                             'groups'    => array_map(
-                                fn($gid) => ['groupid' => $gid],
+                                fn($gid) => ['groupid' => (string) $gid],
                                 (array) ($host_data['group_ids'] ?? [])
                             ),
                             'templates' => array_map(
-                                fn($tid) => ['templateid' => $tid],
+                                fn($tid) => ['templateid' => (string) $tid],
                                 (array) ($host_data['template_ids'] ?? [])
                             ),
-                        ]);
+                        ];
+
+                        // Proxy (Zabbix 7.0+ uses proxyid; ≤6.x uses proxy_hostid)
+                        if (!empty($host_data['proxy_id'])) {
+                            $create['proxyid'] = (string) $host_data['proxy_id'];
+                        }
+
+                        // Tags
+                        if (!empty($host_data['tags']) && is_array($host_data['tags'])) {
+                            $create['tags'] = array_values(array_filter(
+                                $host_data['tags'],
+                                fn($t) => !empty($t['tag'])
+                            ));
+                        }
+
+                        API::Host()->create($create);
                         $result['created']++;
                         break;
 
@@ -117,10 +132,22 @@ class BulkHostsSubmit extends CController {
                             $upd['name'] = $host_data['name'];
                         }
                         if (!empty($host_data['group_ids'])) {
-                            $upd['groups'] = array_map(fn($g) => ['groupid' => $g], $host_data['group_ids']);
+                            $upd['groups'] = array_map(
+                                fn($g) => ['groupid' => (string) $g],
+                                $host_data['group_ids']
+                            );
                         }
                         if (!empty($host_data['template_ids'])) {
-                            $upd['templates'] = array_map(fn($t) => ['templateid' => $t], $host_data['template_ids']);
+                            $upd['templates'] = array_map(
+                                fn($t) => ['templateid' => (string) $t],
+                                $host_data['template_ids']
+                            );
+                        }
+                        if (!empty($host_data['proxy_id'])) {
+                            $upd['proxyid'] = (string) $host_data['proxy_id'];
+                        }
+                        if (!empty($host_data['tags'])) {
+                            $upd['tags'] = $host_data['tags'];
                         }
 
                         API::Host()->update($upd);

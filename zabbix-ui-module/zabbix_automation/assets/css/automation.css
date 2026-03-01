@@ -289,3 +289,289 @@
     color: #666;
     margin-top: 4px;
 }
+
+/* ============================================================
+   Bulk Host Manager — table UI
+   ============================================================ */
+
+/* Table wrapper allows horizontal scroll */
+.bulk-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.bulk-host-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+    table-layout: fixed;
+    min-width: 960px;
+}
+
+.bulk-host-table th,
+.bulk-host-table td {
+    padding: 6px 6px;
+    border-bottom: 1px solid #e8e8e8;
+    vertical-align: top;
+}
+
+.bulk-host-table thead th {
+    background: #f5f5f5;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #d0d0d0;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.bulk-host-table tbody tr:hover td { background: #fafafa; }
+
+/* Column widths */
+.bulk-host-table .col-hostname  { width: 150px; }
+.bulk-host-table .col-groups    { width: 175px; }
+.bulk-host-table .col-templates { width: 175px; }
+.bulk-host-table .col-ip        { width: 120px; }
+.bulk-host-table .col-port      { width: 65px;  }
+.bulk-host-table .col-proxy     { width: 150px; }
+.bulk-host-table .col-tags      { width: 190px; }
+.bulk-host-table .col-actions   { width: 72px;  }
+
+/* Compact input inside table */
+.automation-input-sm {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #c8c8c8;
+    border-radius: 3px;
+    padding: 3px 6px;
+    font-size: 0.8125rem;
+    background: #fff;
+    color: #333;
+}
+
+.automation-input-sm:focus {
+    outline: none;
+    border-color: #999;
+}
+
+/* ── Chips (selected items) ──────────────────────────────── */
+.chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: 4px;
+    min-height: 2px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: #e8f0fe;
+    color: #1558a8;
+    border: 1px solid #c5d8f5;
+    border-radius: 10px;
+    padding: 1px 7px 1px 7px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.chip-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+}
+
+.chip-remove {
+    cursor: pointer;
+    color: #888;
+    font-size: 11px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.chip-remove:hover { color: #d40000; }
+
+/* ── Select button (Groups / Templates / Proxy) ──────────── */
+.btn-select {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    background: #f0f0f0;
+    border: 1px solid #c0c0c0;
+    border-radius: 3px;
+    cursor: pointer;
+    color: #333;
+    white-space: nowrap;
+}
+
+.btn-select:hover { background: #e4e4e4; }
+
+/* Proxy display */
+.proxy-name {
+    display: inline-block;
+    font-size: 0.8rem;
+    color: #333;
+    margin-bottom: 3px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Floating selector panel ─────────────────────────────── */
+.selector-panel {
+    position: fixed;
+    z-index: 99999;
+    background: #fff;
+    border: 1px solid #c0c0c0;
+    border-radius: 4px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    width: 300px;
+    max-height: 340px;
+    display: none;
+    flex-direction: column;
+}
+
+.selector-panel-search {
+    padding: 8px;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+}
+
+.selector-panel-search input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #c8c8c8;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-size: 0.8125rem;
+}
+
+.selector-panel-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 4px 0;
+}
+
+.selector-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 0.8125rem;
+    user-select: none;
+}
+
+.selector-panel-item:hover { background: #f5f5f5; }
+
+.selector-panel-item input { cursor: pointer; flex-shrink: 0; }
+
+.selector-panel-footer {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    border-top: 1px solid #e8e8e8;
+    flex-shrink: 0;
+}
+
+.btn-selector-cancel {
+    padding: 5px 14px;
+    background: #f7f7f7;
+    border: 1px solid #c8c8c8;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8125rem;
+    color: #333;
+}
+
+.btn-selector-cancel:hover { background: #ebebeb; }
+
+/* ── Tag pairs ───────────────────────────────────────────── */
+.tag-pair {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 3px;
+}
+
+.tag-pair .automation-input-sm { flex: 1; min-width: 0; }
+
+.tag-colon { color: #aaa; flex-shrink: 0; font-size: 0.9rem; }
+
+.tag-remove {
+    cursor: pointer;
+    color: #bbb;
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
+    padding: 0 2px;
+}
+
+.tag-remove:hover { color: #d40000; }
+
+.btn-add-tag {
+    font-size: 0.75rem;
+    color: #1a73c1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 1px 0;
+    display: block;
+}
+
+.btn-add-tag:hover { text-decoration: underline; }
+
+/* ── Row action buttons ──────────────────────────────────── */
+.btn-dup,
+.btn-del {
+    padding: 3px 7px;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid;
+    display: block;
+    width: 100%;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.btn-dup {
+    background: #f0f7ff;
+    border-color: #c5d8f5;
+    color: #1558a8;
+}
+
+.btn-dup:hover { background: #dceeff; }
+
+.btn-del {
+    background: #fff5f5;
+    border-color: #f5c5c5;
+    color: #d40000;
+    margin-bottom: 0;
+}
+
+.btn-del:hover { background: #ffe0e0; }
+
+/* ── Add Row button ──────────────────────────────────────── */
+.btn-add-row {
+    font-size: 0.875rem;
+    padding: 8px 16px;
+    background: #fff;
+    border: 1px dashed #aaa;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #555;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.btn-add-row:hover { background: #f7f7f7; border-color: #666; color: #333; }

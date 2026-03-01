@@ -23,27 +23,36 @@ class BulkHosts extends CController {
     }
 
     protected function doAction(): void {
-        // Fetch all host groups for the form dropdown
         $groups = API::HostGroup()->get([
-            'output'     => ['groupid', 'name'],
-            'sortfield'  => 'name',
-            'sortorder'  => 'ASC',
-        ]);
-
-        // Fetch all templates for the form dropdown
-        $templates = API::Template()->get([
-            'output'    => ['templateid', 'host', 'name'],
+            'output'    => ['groupid', 'name'],
             'sortfield' => 'name',
             'sortorder' => 'ASC',
         ]);
+
+        $templates = API::Template()->get([
+            'output'    => ['templateid', 'name'],
+            'sortfield' => 'name',
+            'sortorder' => 'ASC',
+        ]);
+
+        // Zabbix 7.0+ uses API::Proxy(); older versions use API::Host() with proxy filter.
+        $proxies = [];
+        try {
+            $proxies = API::Proxy()->get([
+                'output'    => ['proxyid', 'name'],
+                'sortfield' => 'name',
+                'sortorder' => 'ASC',
+            ]);
+        } catch (\Throwable $e) {
+            // Proxy API not available — leave empty.
+        }
 
         $this->setResponse(new CControllerResponseData([
             'title'     => _('Bulk Host Manager'),
             'groups'    => $groups,
             'templates' => $templates,
-            'user'      => [
-                'debug_mode' => $this->getDebugMode()
-            ]
+            'proxies'   => $proxies,
+            'user'      => ['debug_mode' => $this->getDebugMode()],
         ]));
     }
 }
