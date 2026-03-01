@@ -471,7 +471,7 @@
         if (csrfToken) fd.append('_csrf_token', csrfToken);
 
         try {
-            const resp = await fetch('zabbix.php?action=automation.bulk.hosts.submit', {
+            const resp = await fetch('zabbix.php?action=automation.bulk.hosts', {
                 method: 'POST',
                 body:   fd,
             });
