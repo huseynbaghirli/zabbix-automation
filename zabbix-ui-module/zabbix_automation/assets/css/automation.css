@@ -331,14 +331,14 @@
 .bulk-host-table tbody tr:hover td { background: #fafafa; }
 
 /* Column widths */
-.bulk-host-table .col-hostname  { width: 150px; }
-.bulk-host-table .col-groups    { width: 175px; }
-.bulk-host-table .col-templates { width: 175px; }
-.bulk-host-table .col-ip        { width: 120px; }
-.bulk-host-table .col-port      { width: 65px;  }
-.bulk-host-table .col-proxy     { width: 150px; }
-.bulk-host-table .col-tags      { width: 190px; }
-.bulk-host-table .col-actions   { width: 72px;  }
+.bulk-host-table .col-hostname  { width: 140px; }
+.bulk-host-table .col-groups    { width: 170px; }
+.bulk-host-table .col-templates { width: 170px; }
+.bulk-host-table .col-ip        { width: 115px; }
+.bulk-host-table .col-port      { width: 60px;  }
+.bulk-host-table .col-proxy     { width: 140px; }
+.bulk-host-table .col-tags      { width: 185px; }
+.bulk-host-table .col-actions   { width: 80px; text-align: center; }
 
 /* Compact input inside table */
 .automation-input-sm {
@@ -363,7 +363,7 @@
     flex-wrap: wrap;
     gap: 3px;
     margin-bottom: 4px;
-    min-height: 2px;
+    min-height: 22px;  /* keeps column height consistent even when empty */
 }
 
 .chip {
@@ -529,17 +529,22 @@
 .btn-add-tag:hover { text-decoration: underline; }
 
 /* ── Row action buttons ──────────────────────────────────── */
+.row-actions {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+}
+
 .btn-dup,
 .btn-del {
-    padding: 3px 7px;
-    font-size: 0.8rem;
+    padding: 4px 8px;
+    font-size: 0.85rem;
     border-radius: 3px;
     cursor: pointer;
     border: 1px solid;
-    display: block;
-    width: 100%;
-    margin-bottom: 4px;
-    text-align: center;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .btn-dup {
@@ -554,7 +559,6 @@
     background: #fff5f5;
     border-color: #f5c5c5;
     color: #d40000;
-    margin-bottom: 0;
 }
 
 .btn-del:hover { background: #ffe0e0; }

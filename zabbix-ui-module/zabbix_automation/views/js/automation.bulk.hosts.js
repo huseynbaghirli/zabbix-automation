@@ -138,7 +138,7 @@
         dupBtn.type      = 'button';
         dupBtn.className = 'btn-dup';
         dupBtn.title     = 'Duplicate row';
-        dupBtn.textContent = '⧉ Dup';
+        dupBtn.textContent = '⧉';
         dupBtn.addEventListener('click', () => duplicateRow(tr));
 
         const delBtn = document.createElement('button');
@@ -148,8 +148,11 @@
         delBtn.textContent = '✕';
         delBtn.addEventListener('click', () => deleteRow(tr));
 
-        tdAct.appendChild(dupBtn);
-        tdAct.appendChild(delBtn);
+        const actWrap = document.createElement('div');
+        actWrap.className = 'row-actions';
+        actWrap.appendChild(dupBtn);
+        actWrap.appendChild(delBtn);
+        tdAct.appendChild(actWrap);
 
         /* ── Assemble ── */
         tr.appendChild(tdHost);
@@ -462,13 +465,30 @@
         fd.append('action',     'create');
         fd.append('hosts_json', JSON.stringify(payload));
 
+        // Include CSRF token if embedded in the page
+        const csrfEl = document.getElementById('zbx-csrf-token');
+        if (csrfEl && csrfEl.value) {
+            fd.append('_csrf_token', csrfEl.value);
+        }
+
         try {
             const resp = await fetch('zabbix.php?action=automation.bulk.hosts.submit', {
                 method: 'POST',
                 body:   fd,
             });
 
-            const data = await resp.json();
+            const rawText = await resp.text();
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch (parseErr) {
+                // Server returned HTML — likely CSRF error or module not refreshed
+                showResult(result, 'error',
+                    'Server returned an unexpected response (HTML instead of JSON).\n\n' +
+                    'Fix: Go to Administration → General → Modules, then disable and re-enable ' +
+                    '"Zabbix Automation" module to apply the latest code changes.');
+                return;
+            }
 
             if (data.error) {
                 showResult(result, 'error',

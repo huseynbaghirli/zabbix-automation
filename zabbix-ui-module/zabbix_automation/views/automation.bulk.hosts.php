@@ -16,6 +16,16 @@ echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.cs
 <script type="application/json" id="js-templates"><?= json_encode(array_values($data['templates']), JSON_UNESCAPED_UNICODE) ?></script>
 <script type="application/json" id="js-proxies"><?= json_encode(array_values($data['proxies']),    JSON_UNESCAPED_UNICODE) ?></script>
 
+<?php
+// Embed CSRF token so JS can include it in AJAX requests.
+// CCsrfTokenHelper is available in Zabbix 7.x; older versions may not have it.
+$csrf_token = '';
+if (class_exists('CCsrfTokenHelper')) {
+    try { $csrf_token = CCsrfTokenHelper::get('automation.bulk.hosts.submit'); } catch (\Throwable $e) {}
+}
+?>
+<input type="hidden" id="zbx-csrf-token" value="<?= htmlspecialchars($csrf_token) ?>">
+
 <div class="automation-section">
 
     <!-- Table -->
