@@ -17,10 +17,8 @@ echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.cs
     <div class="automation-cards">
         <?php
         $stats = [
-            [_('Hosts'),        $data['hosts_count']],
-            [_('Templates'),    $data['templates_count']],
-            [_('Host Groups'),  $data['hostgroups_count']],
-            [_('Maintenances'), $data['maintenance_count']],
+            [_('Hosts'),       $data['hosts_count']],
+            [_('Host Groups'), $data['hostgroups_count']],
         ];
         foreach ($stats as [$label, $value]):
         ?>
@@ -39,16 +37,6 @@ echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.cs
             <div class="automation-quick-link-item">
                 <a href="zabbix.php?action=automation.bulk.hosts" class="automation-link-title"><?= _('Bulk Host Manager') ?></a>
                 <div class="automation-link-desc"><?= _('Create, update, or delete multiple hosts at once.') ?></div>
-            </div>
-
-            <div class="automation-quick-link-item">
-                <a href="zabbix.php?action=automation.templates" class="automation-link-title"><?= _('Template Sync') ?></a>
-                <div class="automation-link-desc"><?= _('Export or import Zabbix templates as JSON/XML.') ?></div>
-            </div>
-
-            <div class="automation-quick-link-item">
-                <a href="zabbix.php?action=automation.maintenance" class="automation-link-title"><?= _('Maintenance Manager') ?></a>
-                <div class="automation-link-desc"><?= _('Schedule maintenance windows for hosts or host groups.') ?></div>
             </div>
 
         </div>

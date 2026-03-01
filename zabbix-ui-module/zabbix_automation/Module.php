@@ -26,10 +26,6 @@ class Module extends CModule {
                         ->setAction('automation.dashboard'),
                     (new CMenuItem(_('Bulk Host Manager')))
                         ->setAction('automation.bulk.hosts'),
-                    (new CMenuItem(_('Template Sync')))
-                        ->setAction('automation.templates'),
-                    (new CMenuItem(_('Maintenance Manager')))
-                        ->setAction('automation.maintenance'),
                 ]))
         );
     }

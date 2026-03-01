@@ -23,19 +23,14 @@ class Dashboard extends CController {
     }
 
     protected function doAction(): void {
-        // Gather summary stats via Zabbix API
-        $hosts_count = API::Host()->get(['countOutput' => true]);
-        $templates_count = API::Template()->get(['countOutput' => true]);
+        $hosts_count      = API::Host()->get(['countOutput' => true]);
         $hostgroups_count = API::HostGroup()->get(['countOutput' => true]);
-        $maintenance_count = API::Maintenance()->get(['countOutput' => true]);
 
         $this->setResponse(new CControllerResponseData([
-            'title'             => _('Automation Dashboard'),
-            'hosts_count'       => $hosts_count,
-            'templates_count'   => $templates_count,
-            'hostgroups_count'  => $hostgroups_count,
-            'maintenance_count' => $maintenance_count,
-            'user'              => [
+            'title'            => _('Automation Dashboard'),
+            'hosts_count'      => $hosts_count,
+            'hostgroups_count' => $hostgroups_count,
+            'user'             => [
                 'debug_mode' => $this->getDebugMode()
             ]
         ]));

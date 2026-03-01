@@ -5,7 +5,7 @@
     "namespace": "ZabbixAutomation",
     "version": "1.0.0",
     "author": "zabbix-automation",
-    "description": "Automation tools for bulk host management, template sync, and maintenance windows.",
+    "description": "Automation tools for bulk host management.",
     "actions": {
         "automation.dashboard": {
             "class": "Dashboard",
@@ -19,28 +19,6 @@
         },
         "automation.bulk.hosts.submit": {
             "class": "BulkHostsSubmit",
-            "layout": "layout.json"
-        },
-        "automation.templates": {
-            "class": "Templates",
-            "layout": "layout.htmlpage",
-            "view": "automation.templates"
-        },
-        "automation.templates.export": {
-            "class": "TemplatesExport",
-            "layout": "layout.json"
-        },
-        "automation.templates.import": {
-            "class": "TemplatesImport",
-            "layout": "layout.json"
-        },
-        "automation.maintenance": {
-            "class": "Maintenance",
-            "layout": "layout.htmlpage",
-            "view": "automation.maintenance"
-        },
-        "automation.maintenance.submit": {
-            "class": "MaintenanceSubmit",
             "layout": "layout.json"
         }
     }
