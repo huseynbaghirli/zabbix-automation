@@ -314,7 +314,7 @@
 .bulk-host-table td {
     padding: 6px 6px;
     border-bottom: 1px solid #e8e8e8;
-    vertical-align: top;
+    vertical-align: middle;
 }
 
 .bulk-host-table thead th {
@@ -362,8 +362,12 @@
     display: flex;
     flex-wrap: wrap;
     gap: 3px;
+    min-height: 0;  /* collapses when empty so Select stays at top */
+}
+
+/* Only add spacing below chips when at least one chip exists */
+.chip-container:not(:empty) {
     margin-bottom: 4px;
-    min-height: 22px;  /* keeps column height consistent even when empty */
 }
 
 .chip {
@@ -413,6 +417,8 @@
 .btn-select:hover { background: #e4e4e4; }
 
 /* Proxy display */
+.proxy-display:empty { display: none; }
+
 .proxy-name {
     display: inline-block;
     font-size: 0.8rem;

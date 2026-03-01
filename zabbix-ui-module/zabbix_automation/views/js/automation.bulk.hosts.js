@@ -482,11 +482,13 @@
             try {
                 data = JSON.parse(rawText);
             } catch (parseErr) {
-                // Server returned HTML — likely CSRF error or module not refreshed
+                // Server returned HTML — PHP opcache serving old file (most common cause)
                 showResult(result, 'error',
-                    'Server returned an unexpected response (HTML instead of JSON).\n\n' +
-                    'Fix: Go to Administration → General → Modules, then disable and re-enable ' +
-                    '"Zabbix Automation" module to apply the latest code changes.');
+                    'Server error: PHP returned HTML instead of JSON.\n\n' +
+                    'Fix (run on server as root):\n' +
+                    '  systemctl restart php-fpm   # or apache2/nginx\n\n' +
+                    'Then reload this page and try again.\n' +
+                    '(Module disable/enable is not enough — PHP opcache must be cleared.)');
                 return;
             }
 
