@@ -6,48 +6,48 @@ This file provides guidance for AI assistants (Claude Code and similar) working 
 
 ## Project Overview
 
-**zabbix-automation** is a collection of scripts, templates, and tooling for automating Zabbix monitoring infrastructure. Typical tasks include:
+**zabbix-automation** is a **Zabbix UI Module** (PHP + vanilla JS) that adds an **Automation**
+section to the Zabbix left-side navigation menu. Current features:
 
-- Provisioning hosts, host groups, templates, and items via the Zabbix API
-- Exporting/importing Zabbix configuration as code (templates, dashboards, maps)
-- Bulk operations (mass host creation, trigger updates, maintenance windows)
-- Integration with CI/CD pipelines and infrastructure-as-code workflows (Ansible, Terraform, etc.)
+- **Dashboard** — summary counters (hosts, host groups) and quick links
+- **Bulk Host Manager** — create, update, or delete multiple Zabbix hosts at once via a
+  table-based UI with per-row duplicate/increment controls
 
 ---
 
-## Repository Structure (Planned)
+## Repository Structure
 
 ```
 zabbix-automation/
-├── CLAUDE.md              # This file
-├── README.md              # Human-facing project documentation
-├── .env.example           # Required environment variables (never commit .env)
-├── requirements.txt       # Python dependencies (if applicable)
-├── pyproject.toml         # Python project config / linting config
+├── CLAUDE.md                              # This file
 │
-├── scripts/               # Standalone automation scripts
-│   ├── hosts/             # Host creation, update, and deletion
-│   ├── templates/         # Template import/export/sync
-│   ├── maintenance/       # Maintenance window management
-│   └── reports/           # Reporting and alerting scripts
-│
-├── templates/             # Zabbix XML/JSON templates (exported configs)
-│   ├── hosts/
-│   └── templates/
-│
-├── ansible/               # Ansible roles/playbooks (if used)
-├── terraform/             # Terraform modules (if used)
-│
-├── lib/                   # Shared Python modules / helper libraries
-│   ├── zabbix_client.py   # Wrapper around the Zabbix API
-│   └── utils.py           # Common utilities
-│
-└── tests/                 # Unit and integration tests
-    ├── unit/
-    └── integration/
+└── zabbix-ui-module/
+    ├── DEPLOY.md                          # Installation and deployment guide
+    │
+    └── zabbix_automation/                 # The Zabbix module — copy this to zabbix/modules/
+        ├── manifest.json                  # Module metadata + route definitions
+        ├── Module.php                     # Registers left-menu item + global CSS
+        │
+        ├── actions/
+        │   ├── Dashboard.php              # Dashboard page controller
+        │   ├── BulkHosts.php              # Bulk Host Manager form controller
+        │   └── BulkHostsSubmit.php        # AJAX: creates / updates / deletes hosts
+        │
+        ├── views/
+        │   ├── automation.dashboard.php   # Dashboard HTML template
+        │   ├── automation.bulk.hosts.php  # Bulk Host Manager HTML template
+        │   └── js/
+        │       ├── automation.dashboard.js    # Inlined by dashboard view
+        │       └── automation.bulk.hosts.js   # Inlined by bulk hosts view
+        │
+        └── assets/
+            └── css/
+                └── automation.css         # Module-scoped styles (loaded via Module.php)
 ```
 
-> **Note:** As the project evolves, update this section to reflect the actual directory layout.
+> **Note:** JS files belong in `views/js/` and are inlined by their respective PHP view via
+> `file_get_contents()`. Do **not** add runtime JS to `assets/` — that directory is only used
+> for CSS registered through `Module::getStylesheets()`.
 
 ---
 
@@ -55,150 +55,103 @@ zabbix-automation/
 
 ### Prerequisites
 
-- Python 3.10+ (primary scripting language)
-- Access to a Zabbix server (6.0 LTS or 7.0+ recommended)
-- `pip` or `pipenv` / `poetry` for dependency management
+- A running **Zabbix 6.0 LTS** or **7.0+** instance
+- **PHP 8.0+** (the module runs inside the Zabbix web stack — no standalone runtime)
+- Web-server write access to the Zabbix `modules/` directory
+- A browser with developer tools for front-end debugging
 
 ### Setup
 
 ```bash
-# Clone the repo
-git clone <repo-url>
-cd zabbix-automation
+# Copy the module to your Zabbix UI
+sudo cp -r zabbix-ui-module/zabbix_automation /usr/share/zabbix/modules/
+sudo chown -R www-data:www-data /usr/share/zabbix/modules/zabbix_automation
 
-# Create a virtual environment
-python -m venv .venv
-source .venv/bin/activate      # Linux/macOS
-# .venv\Scripts\activate       # Windows
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Copy and fill in environment variables
-cp .env.example .env
-# Edit .env with your Zabbix URL, username, and password/API token
+# Enable the module in the Zabbix UI:
+# Administration → General → Modules → Scan directory → Enable "Zabbix Automation"
 ```
 
-### Environment Variables
-
-| Variable              | Description                                      | Required |
-|-----------------------|--------------------------------------------------|----------|
-| `ZABBIX_URL`          | Full URL to Zabbix frontend (e.g., `https://zabbix.example.com`) | Yes |
-| `ZABBIX_USER`         | Zabbix API username                              | Yes* |
-| `ZABBIX_PASSWORD`     | Zabbix API password                              | Yes* |
-| `ZABBIX_API_TOKEN`    | Zabbix API token (preferred over user/password)  | Yes* |
-| `ZABBIX_VERIFY_SSL`   | `true`/`false` — whether to verify TLS certs    | No (default: `true`) |
-
-*Either `ZABBIX_API_TOKEN` or `ZABBIX_USER`+`ZABBIX_PASSWORD` must be set.
-
-**Never commit `.env` files or credentials to the repository.**
+For full installation steps, troubleshooting, and uninstall instructions, see
+`zabbix-ui-module/DEPLOY.md`.
 
 ---
 
 ## Key Conventions
 
-### Python Style
+### PHP Style
 
-- Follow **PEP 8** and enforce with `ruff` or `flake8`.
-- Format code with **`black`** (line length: 100).
-- Use **type hints** for all function signatures.
-- Prefer explicit over implicit — do not rely on magic or globals.
-- Keep scripts self-contained where practical; extract shared logic into `lib/`.
+- Follow **PSR-12** coding standards.
+- Always add `declare(strict_types=1)` at the top of every PHP file.
+- Use **type hints** for all method signatures.
+- Keep controllers thin — all Zabbix API calls go through the built-in `API::*()` facade.
+- Never hardcode Zabbix integer constants — use the named constants
+  (`HOST_STATUS_MONITORED`, `INTERFACE_TYPE_AGENT`, etc.).
 
-```python
-# Good
-def create_host(client: ZabbixClient, host_name: str, group_ids: list[int]) -> dict:
-    ...
-
-# Bad
-def create_host(client, host_name, group_ids):
-    ...
+```php
+// Good — idempotent host creation
+$existing = API::Host()->get([
+    'output' => ['hostid'],
+    'filter' => ['host' => $host_name],
+]);
+if (!$existing) {
+    API::Host()->create([...]);
+}
 ```
+
+### JavaScript Style
+
+- Plain **vanilla ES2020+** — no build step, no bundler, no npm.
+- Wrap all module-level code in an **IIFE** (`(function () { ... })()`) to avoid polluting the
+  global scope.
+- Use `'use strict'` at the top of every JS file.
+- Prefer `const` / `let`; never use `var`.
+- Use clear, descriptive names; avoid abbreviations that aren't self-evident.
+
+### CSS
+
+- One stylesheet: `assets/css/automation.css`. It is loaded on every Zabbix page while the
+  module is enabled, so scope **all** selectors to `.automation-*` or module-specific class
+  names to avoid conflicts with Zabbix core styles.
+- Use CSS variables (`var(--color-bg, #fff)`) for colours wherever Zabbix provides them.
 
 ### Zabbix API
 
-- Always use the shared `ZabbixClient` wrapper (`lib/zabbix_client.py`) — never instantiate raw HTTP calls inline.
-- Handle API errors explicitly; do not silently swallow exceptions.
+- All API calls go through `API::Host()`, `API::HostGroup()`, `API::Template()`, etc.
+- Handle errors explicitly — wrap API calls in `try/catch` and return meaningful error messages.
 - Prefer **idempotent** operations: check if a resource exists before creating it.
-- Use Zabbix API token authentication (`ZABBIX_API_TOKEN`) in all environments when available.
-
-```python
-# Idempotent host creation pattern
-existing = client.host.get(filter={"host": host_name})
-if not existing:
-    client.host.create(...)
-```
-
-### Configuration as Code
-
-- Store all Zabbix templates and exported configurations as **version-controlled JSON or XML** under `templates/`.
-- Use Zabbix's native export/import format (XML for ≤6.4, JSON for 7.0+).
-- Do not hardcode host IDs, group IDs, or template IDs — resolve them dynamically via the API or via config files.
 
 ### Secrets and Security
 
-- **Never hardcode credentials** in scripts, templates, or tests.
-- Use environment variables (via `.env` locally, secrets manager in CI/CD).
-- Validate and sanitize any external input before passing it to API calls.
-- Use HTTPS for all Zabbix API connections; only disable SSL verification in local/dev environments.
-
-### Error Handling
-
-- Log errors with sufficient context (host name, operation, API response).
-- Exit with a non-zero status code on failure so CI/CD pipelines can detect errors.
-- Use structured logging (`logging` module, not bare `print`).
-
-```python
-import logging
-logger = logging.getLogger(__name__)
-
-try:
-    result = client.host.create(...)
-except ZabbixAPIError as e:
-    logger.error("Failed to create host %s: %s", host_name, e)
-    raise SystemExit(1)
-```
+- **Never hardcode credentials** in any file.
+- Always use `htmlspecialchars()` when echoing user-controlled data in PHP views.
+- Validate POST data with Zabbix's `validateInput()` before using it.
+- Use HTTPS for all Zabbix API connections; only disable SSL verification in local dev.
 
 ---
 
 ## Testing
 
-### Running Tests
+Automated tests are not yet set up. When adding them:
 
-```bash
-# Unit tests
-pytest tests/unit/
-
-# Integration tests (requires a live Zabbix instance)
-ZABBIX_URL=https://... pytest tests/integration/
-
-# All tests with coverage
-pytest --cov=lib tests/
-```
-
-### Test Conventions
-
-- Unit tests must **not** make real network calls — mock the `ZabbixClient`.
-- Integration tests should run against a **test/staging Zabbix instance**, never production.
-- Test file names: `test_<module_name>.py`.
-- Each test function name should clearly describe the scenario: `test_create_host_returns_id_on_success`.
+- Use **PHPUnit** for PHP unit tests.
+- Mock `API::*()` calls — never hit a live Zabbix instance in unit tests.
+- Integration tests should run against a **staging** Zabbix instance, never production.
+- Test file names: `test_<class_name>.php` under `tests/`.
 
 ---
 
 ## Linting and Formatting
 
 ```bash
-# Format code
-black .
+# PHP code style (PSR-12)
+phpcs --standard=PSR12 zabbix-ui-module/
 
-# Lint
-ruff check .         # or: flake8 .
+# PHP static analysis
+phpstan analyse zabbix-ui-module/
 
-# Type checking
-mypy lib/ scripts/
+# JavaScript (optional, if eslint is available)
+eslint zabbix-ui-module/zabbix_automation/views/js/
 ```
-
-All three must pass before merging. Configure CI to enforce this.
 
 ---
 
@@ -206,12 +159,12 @@ All three must pass before merging. Configure CI to enforce this.
 
 ### Branch Naming
 
-| Branch type    | Pattern                        | Example                          |
-|----------------|--------------------------------|----------------------------------|
-| Feature        | `feature/<short-description>`  | `feature/bulk-host-import`       |
-| Bug fix        | `fix/<short-description>`      | `fix/auth-token-refresh`         |
-| Chore/Infra    | `chore/<short-description>`    | `chore/update-dependencies`      |
-| AI-assisted    | `claude/<session-description>` | `claude/claude-md-mm6nucecl6uqa7lu-ABVY7` |
+| Branch type | Pattern                        | Example                           |
+|-------------|--------------------------------|-----------------------------------|
+| Feature     | `feature/<short-description>`  | `feature/template-sync`           |
+| Bug fix     | `fix/<short-description>`      | `fix/csrf-token-refresh`          |
+| Chore/Infra | `chore/<short-description>`    | `chore/update-deploy-docs`        |
+| AI-assisted | `claude/<session-description>` | `claude/add-bulk-host-manager`    |
 
 ### Commit Messages
 
@@ -227,16 +180,17 @@ Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`
 
 Examples:
 ```
-feat(hosts): add bulk host creation from CSV
-fix(client): handle expired API token with auto-refresh
-docs(readme): add setup instructions for Docker
+feat(bulk-hosts): add ⧉+1 button to increment hostname and IP together
+fix(bulk-hosts): prevent IP overflow beyond 255
+docs(deploy): add troubleshooting table
+chore: remove unused assets/js dead code
 ```
 
 ### Pull Requests
 
 - Keep PRs focused and small (one logical change per PR).
 - Include a description of what changed and why.
-- All CI checks (lint, tests) must pass before merging.
+- All CI checks must pass before merging.
 - Squash-merge into `main` to keep history clean.
 
 ---
@@ -245,11 +199,11 @@ docs(readme): add setup instructions for Docker
 
 > To be defined as the project matures. Recommended pipeline steps:
 
-1. **Lint** — `ruff check .` + `black --check .`
-2. **Type check** — `mypy lib/ scripts/`
-3. **Unit tests** — `pytest tests/unit/`
-4. **Integration tests** — against a staging Zabbix instance (optional/manual gate)
-5. **Deploy/run** — triggered by merge to `main` or a tagged release
+1. **PHP lint** — `phpcs --standard=PSR12`
+2. **PHP static analysis** — `phpstan analyse`
+3. **Unit tests** — `phpunit tests/unit/`
+4. **Integration tests** — against a staging Zabbix instance (manual gate)
+5. **Deploy** — triggered by merge to `main` or a tagged release
 
 ---
 
@@ -258,22 +212,21 @@ docs(readme): add setup instructions for Docker
 When working in this repository, AI assistants should:
 
 1. **Read before editing** — always read the relevant files before making changes.
-2. **Use the shared client** — all Zabbix API interactions must go through `lib/zabbix_client.py`.
-3. **Keep operations idempotent** — scripts should be safe to run multiple times.
+2. **Use Zabbix API facades** — all API calls go through `API::Host()->get(...)` etc.
+3. **Keep operations idempotent** — actions should be safe to run multiple times.
 4. **Never commit secrets** — refuse to include credentials, tokens, or passwords in any file.
 5. **Follow existing style** — match the formatting, naming, and structure of adjacent code.
-6. **Write tests** — any new utility function in `lib/` should have a corresponding unit test.
-7. **Update this file** — if the project structure changes significantly, update `CLAUDE.md` to reflect the new state.
+6. **JS belongs in `views/js/`** — do not add runtime JS to `assets/`; it is not loaded from there.
+7. **Sanitise output** — always use `htmlspecialchars()` when echoing user data in PHP.
 8. **Prefer small, focused changes** — avoid large refactors unless explicitly requested.
-9. **Ask before destructive actions** — deleting hosts, triggers, or Zabbix objects is irreversible; confirm intent.
-10. **Log, don't print** — use the `logging` module; avoid bare `print()` in library code.
+9. **Ask before destructive actions** — deleting hosts or Zabbix objects is irreversible.
+10. **Update this file** — if the project structure changes significantly, update `CLAUDE.md`.
 
 ---
 
 ## Useful References
 
+- [Zabbix Module Development](https://www.zabbix.com/documentation/current/en/manual/modules)
 - [Zabbix API Documentation](https://www.zabbix.com/documentation/current/en/manual/api)
-- [pyzabbix library](https://github.com/lukecyca/pyzabbix) — common Python Zabbix API client
-- [zabbix-cli](https://github.com/unioslo/zabbix-cli) — CLI wrapper for the Zabbix API
 - [Conventional Commits](https://www.conventionalcommits.org/)
-- [PEP 8 Style Guide](https://peps.python.org/pep-0008/)
+- [PSR-12 Coding Standard](https://www.php-fig.org/psr/psr-12/)

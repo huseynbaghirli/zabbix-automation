@@ -2,14 +2,12 @@
 
 ## What this does
 
-Adds an **"Automation"** section to the Zabbix left-side navigation menu with four tools:
+Adds an **"Automation"** section to the Zabbix left-side navigation menu:
 
-| Page | URL action | Description |
-|------|-----------|-------------|
-| Dashboard | `automation.dashboard` | Summary counters (hosts, templates, groups, maintenances) + quick links |
-| Bulk Host Manager | `automation.bulk.hosts` | Create / update / delete many hosts at once via JSON input |
-| Template Sync | `automation.templates` | Export templates as JSON or XML; import from JSON/XML content |
-| Maintenance Manager | `automation.maintenance` | Schedule maintenance windows for hosts or host groups |
+| Page               | URL action              | Description                                          |
+|--------------------|-------------------------|------------------------------------------------------|
+| Dashboard          | `automation.dashboard`  | Summary counters (hosts, host groups) + quick links  |
+| Bulk Host Manager  | `automation.bulk.hosts` | Create / update / delete many hosts at once via a table UI |
 
 ---
 
@@ -62,33 +60,24 @@ sudo chown -R www-data:www-data /usr/share/zabbix/modules/zabbix_automation
 
 ```
 zabbix_automation/
-├── manifest.json               ← Module metadata + route definitions
-├── Module.php                  ← Registers the "Automation" left-menu item
+├── manifest.json                  ← Module metadata + route definitions
+├── Module.php                     ← Registers "Automation" left-menu item + CSS
 │
 ├── actions/
-│   ├── Dashboard.php           ← Stats page controller
-│   ├── BulkHosts.php           ← Bulk host form controller
-│   ├── BulkHostsSubmit.php     ← AJAX: creates/updates/deletes hosts
-│   ├── Templates.php           ← Template sync page controller
-│   ├── TemplatesExport.php     ← AJAX: exports templates to JSON/XML
-│   ├── TemplatesImport.php     ← AJAX: imports templates from JSON/XML
-│   ├── Maintenance.php         ← Maintenance manager page controller
-│   └── MaintenanceSubmit.php   ← AJAX: creates a maintenance window
+│   ├── Dashboard.php              ← Dashboard page controller
+│   ├── BulkHosts.php              ← Bulk Host Manager form controller
+│   └── BulkHostsSubmit.php        ← AJAX: creates / updates / deletes hosts
 │
 ├── views/
 │   ├── automation.dashboard.php
 │   ├── automation.bulk.hosts.php
-│   ├── automation.templates.php
-│   └── automation.maintenance.php
+│   └── js/
+│       ├── automation.dashboard.js    ← Inlined by dashboard view
+│       └── automation.bulk.hosts.js   ← Inlined by bulk hosts view
 │
 └── assets/
-    ├── css/
-    │   └── automation.css      ← Module-scoped styles
-    └── js/
-        ├── automation.dashboard.js
-        ├── automation.bulk.hosts.js
-        ├── automation.templates.js
-        └── automation.maintenance.js
+    └── css/
+        └── automation.css         ← Module-scoped styles
 ```
 
 ---
@@ -106,10 +95,10 @@ zabbix_automation/
 
 ## Troubleshooting
 
-| Symptom | Fix |
-|---------|-----|
-| Module doesn't appear after scan | Check file ownership (`chown www-data`) and that `manifest.json` is valid JSON |
-| 500 error on page | Check PHP error log: `tail -f /var/log/apache2/error.log` or `/var/log/php*.log` |
-| "Action not found" | Make sure module is **Enabled**, not just scanned |
-| CSS/JS not loading | Hard-refresh browser (Ctrl+Shift+R); check browser dev-tools Network tab |
-| API permission errors | Ensure the logged-in Zabbix user has correct role permissions |
+| Symptom                            | Fix                                                                                     |
+|------------------------------------|-----------------------------------------------------------------------------------------|
+| Module doesn't appear after scan   | Check file ownership (`chown www-data`) and that `manifest.json` is valid JSON          |
+| 500 error on page                  | Check PHP error log: `tail -f /var/log/apache2/error.log` or `/var/log/php*.log`        |
+| "Action not found"                 | Make sure the module is **Enabled**, not just scanned                                   |
+| CSS/JS not loading                 | Hard-refresh browser (Ctrl+Shift+R); check browser dev-tools Network tab                |
+| API permission errors              | Ensure the logged-in Zabbix user has the correct role permissions                       |
