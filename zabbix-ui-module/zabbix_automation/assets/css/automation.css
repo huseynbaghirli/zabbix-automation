@@ -357,6 +357,11 @@
     border-color: #999;
 }
 
+.automation-input-sm.ip-error {
+    border-color: #d40000;
+    background: #fff5f5;
+}
+
 /* ── Chips (selected items) ──────────────────────────────── */
 .chip-container {
     display: flex;

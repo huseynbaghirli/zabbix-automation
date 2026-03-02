@@ -93,8 +93,14 @@
         tdTpls.appendChild(makeSelectBtn('templates'));
 
         /* ── IP ── */
-        const tdIp = makeTd('col-ip');
-        tdIp.appendChild(makeInput('f-ip', d.ip || '', '192.168.1.1'));
+        const tdIp  = makeTd('col-ip');
+        const ipInp = makeInput('f-ip', d.ip || '', '192.168.1.1');
+        const validateIpField = () => {
+            ipInp.classList.toggle('ip-error', !isValidIp(ipInp.value.trim()));
+        };
+        ipInp.addEventListener('blur',  validateIpField);
+        ipInp.addEventListener('input', validateIpField);
+        tdIp.appendChild(ipInp);
 
         /* ── Port ── */
         const tdPort = makeTd('col-port');
@@ -448,6 +454,21 @@
             return;
         }
 
+        // Validate IP addresses before submitting
+        const invalidIps = hosts.filter(h => h.ip !== '' && !isValidIp(h.ip));
+        if (invalidIps.length > 0) {
+            // Highlight the bad fields
+            rows.forEach(tr => {
+                const inp = tr.querySelector('.f-ip');
+                inp.classList.toggle('ip-error', !isValidIp(inp.value.trim()));
+            });
+            showResult(result, 'error',
+                'Invalid IP address' + (invalidIps.length > 1 ? 'es' : '') + ': ' +
+                invalidIps.map(h => '"' + h.ip + '" (' + h.host + ')').join(', ')
+            );
+            return;
+        }
+
         btn.disabled = true;
         showResult(result, '', 'Submitting…');
 
@@ -518,6 +539,13 @@
     /* ═══════════════════════════════════════════════════════
        UTILS
        ═══════════════════════════════════════════════════════ */
+
+    function isValidIp(val) {
+        if (val === '') return true; // empty → backend defaults to 127.0.0.1
+        const parts = val.split('.');
+        if (parts.length !== 4) return false;
+        return parts.every(p => /^\d{1,3}$/.test(p) && Number(p) <= 255);
+    }
 
     function showResult(el, type, text) {
         el.className  = 'automation-results' + (type ? ' ' + type : '');
