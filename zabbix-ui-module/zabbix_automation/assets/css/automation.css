@@ -566,6 +566,14 @@
 
 .btn-dup:hover { background: #dceeff; }
 
+.btn-dup-ip {
+    background: #f0fff4;
+    border-color: #b7dfca;
+    color: #155724;
+}
+
+.btn-dup-ip:hover { background: #d4edda; }
+
 .btn-del {
     background: #fff5f5;
     border-color: #f5c5c5;

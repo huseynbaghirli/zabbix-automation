@@ -59,6 +59,13 @@
         sourceRow.after(newTr);
     }
 
+    function duplicateRowIncrIp(sourceRow) {
+        const data = extractRowData(sourceRow);
+        data.ip    = incrementIp(data.ip);
+        const newTr = buildRow(data);
+        sourceRow.after(newTr);
+    }
+
     function deleteRow(rowEl) {
         const tbody = document.getElementById('hosts-tbody');
         if (tbody.querySelectorAll('.host-row').length > 1) {
@@ -147,6 +154,13 @@
         dupBtn.textContent = '⧉';
         dupBtn.addEventListener('click', () => duplicateRow(tr));
 
+        const dupIpBtn = document.createElement('button');
+        dupIpBtn.type      = 'button';
+        dupIpBtn.className = 'btn-dup-ip';
+        dupIpBtn.title     = 'Duplicate and increment last IP octet';
+        dupIpBtn.textContent = '⧉+1';
+        dupIpBtn.addEventListener('click', () => duplicateRowIncrIp(tr));
+
         const delBtn = document.createElement('button');
         delBtn.type      = 'button';
         delBtn.className = 'btn-del';
@@ -157,6 +171,7 @@
         const actWrap = document.createElement('div');
         actWrap.className = 'row-actions';
         actWrap.appendChild(dupBtn);
+        actWrap.appendChild(dupIpBtn);
         actWrap.appendChild(delBtn);
         tdAct.appendChild(actWrap);
 
@@ -545,6 +560,16 @@
         const parts = val.split('.');
         if (parts.length !== 4) return false;
         return parts.every(p => /^\d{1,3}$/.test(p) && Number(p) <= 255);
+    }
+
+    function incrementIp(ip) {
+        if (!ip) return ip;
+        const parts = ip.split('.');
+        if (parts.length !== 4) return ip;
+        const last = parseInt(parts[3], 10);
+        if (isNaN(last) || last >= 255) return ip; // 255 → do not overflow
+        parts[3] = String(last + 1);
+        return parts.join('.');
     }
 
     function showResult(el, type, text) {
