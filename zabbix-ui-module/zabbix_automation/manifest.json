@@ -19,7 +19,7 @@
         },
         "automation.bulk.hosts.submit": {
             "class": "BulkHostsSubmit",
-            "layout": "layout.json"
+            "layout": "layout.javascript"
         }
     }
 }
