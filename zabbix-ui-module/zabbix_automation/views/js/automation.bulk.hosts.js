@@ -62,6 +62,7 @@
     function duplicateRowIncrIp(sourceRow) {
         const data = extractRowData(sourceRow);
         data.ip    = incrementIp(data.ip);
+        data.host  = incrementHostname(data.host);
         const newTr = buildRow(data);
         sourceRow.after(newTr);
     }
@@ -570,6 +571,18 @@
         if (isNaN(last) || last >= 255) return ip; // 255 → do not overflow
         parts[3] = String(last + 1);
         return parts.join('.');
+    }
+
+    function incrementHostname(name) {
+        if (!name) return name;
+        // Match a trailing numeric sequence, e.g. "kafka01" → prefix="kafka", digits="01"
+        const match = name.match(/^(.*?)(\d+)$/);
+        if (!match) return name;
+        const prefix  = match[1];
+        const numStr  = match[2];
+        const next    = parseInt(numStr, 10) + 1;
+        // Preserve original padding width; padStart won't truncate if next is wider
+        return prefix + String(next).padStart(numStr.length, '0');
     }
 
     function showResult(el, type, text) {
