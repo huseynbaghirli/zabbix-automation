@@ -9,7 +9,7 @@ use CController;
 use CControllerResponseData;
 
 /**
- * Handles AJAX submission of the Bulk Host Manager form.
+ * Handles AJAX submission of the Quick Add Hosts form.
  *
  * POST fields (multipart/form-data):
  *   _csrf_token  - Zabbix CSRF token (generated with action name as context)

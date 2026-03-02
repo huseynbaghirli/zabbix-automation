@@ -7,7 +7,7 @@ Adds an **"Automation"** section to the Zabbix left-side navigation menu:
 | Page               | URL action              | Description                                          |
 |--------------------|-------------------------|------------------------------------------------------|
 | Dashboard          | `automation.dashboard`  | Summary counters (hosts, host groups) + quick links  |
-| Bulk Host Manager  | `automation.bulk.hosts` | Create / update / delete many hosts at once via a table UI |
+| Quick Add Hosts  | `automation.bulk.hosts` | Create / update / delete many hosts at once via a table UI |
 
 ---
 
@@ -65,7 +65,7 @@ zabbix_automation/
 │
 ├── actions/
 │   ├── Dashboard.php              ← Dashboard page controller
-│   ├── BulkHosts.php              ← Bulk Host Manager form controller
+│   ├── BulkHosts.php              ← Quick Add Hosts form controller
 │   └── BulkHostsSubmit.php        ← AJAX: creates / updates / deletes hosts
 │
 ├── views/

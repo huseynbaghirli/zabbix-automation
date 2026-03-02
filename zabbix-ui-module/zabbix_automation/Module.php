@@ -24,7 +24,7 @@ class Module extends CModule {
                 ->setSubMenu(new CMenu([
                     (new CMenuItem(_('Dashboard')))
                         ->setAction('automation.dashboard'),
-                    (new CMenuItem(_('Bulk Host Manager')))
+                    (new CMenuItem(_('Quick Add Hosts')))
                         ->setAction('automation.bulk.hosts'),
                 ]))
         );

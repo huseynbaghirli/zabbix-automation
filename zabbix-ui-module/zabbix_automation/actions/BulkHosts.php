@@ -47,7 +47,7 @@ class BulkHosts extends CController {
         }
 
         $this->setResponse(new CControllerResponseData([
-            'title'     => _('Bulk Host Manager'),
+            'title'     => _('Quick Add Hosts'),
             'groups'    => $groups,
             'templates' => $templates,
             'proxies'   => $proxies,

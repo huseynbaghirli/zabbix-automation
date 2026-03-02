@@ -1,5 +1,5 @@
 /*
- * Zabbix Automation Module — Bulk Host Manager
+ * Zabbix Automation Module — Quick Add Hosts
  *
  * Table-based UI:
  *   - Each row = one host definition

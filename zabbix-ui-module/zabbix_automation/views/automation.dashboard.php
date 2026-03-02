@@ -35,7 +35,7 @@ echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.cs
         <div class="automation-quick-links">
 
             <div class="automation-quick-link-item">
-                <a href="zabbix.php?action=automation.bulk.hosts" class="automation-link-title"><?= _('Bulk Host Manager') ?></a>
+                <a href="zabbix.php?action=automation.bulk.hosts" class="automation-link-title"><?= _('Quick Add Hosts') ?></a>
                 <div class="automation-link-desc"><?= _('Create, update, or delete multiple hosts at once.') ?></div>
             </div>
 
