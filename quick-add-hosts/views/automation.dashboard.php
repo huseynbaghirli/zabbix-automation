@@ -39,6 +39,11 @@ echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.cs
                 <div class="automation-link-desc"><?= _('Create, update, or delete multiple hosts at once.') ?></div>
             </div>
 
+            <div class="automation-quick-link-item">
+                <a href="zabbix.php?action=useralerts.overview" class="automation-link-title"><?= _('User Alert Overview') ?></a>
+                <div class="automation-link-desc"><?= _('See every user\'s media, severity settings, trigger actions and host group access in one place.') ?></div>
+            </div>
+
         </div>
     </div>
 
