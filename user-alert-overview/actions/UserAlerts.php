@@ -24,11 +24,11 @@ class UserAlerts extends CController {
 
     protected function doAction(): void {
         // ── Media types ──────────────────────────────────────────────────────
-        $mt_raw      = API::MediaType()->get(['output' => ['mediatypeid', 'name', 'type']]);
+        $mt_raw      = API::MediaType()->get(['output' => ['mediatypeid', 'name', 'type']]) ?: [];
         $media_types = array_column($mt_raw, null, 'mediatypeid');
 
         // ── Host groups ──────────────────────────────────────────────────────
-        $hg_raw     = API::HostGroup()->get(['output' => ['groupid', 'name']]);
+        $hg_raw     = API::HostGroup()->get(['output' => ['groupid', 'name']]) ?: [];
         $hostgroups = array_column($hg_raw, null, 'groupid');
 
         // ── Template groups (Zabbix 6.2+) ────────────────────────────────────
@@ -36,7 +36,7 @@ class UserAlerts extends CController {
         try {
             $tg_api = API::TemplateGroup();
             if ($tg_api !== null) {
-                $tg_raw          = $tg_api->get(['output' => ['groupid', 'name']]);
+                $tg_raw          = $tg_api->get(['output' => ['groupid', 'name']]) ?: [];
                 $template_groups = array_column($tg_raw, null, 'groupid');
             }
         } catch (\Throwable $e) {
@@ -47,7 +47,7 @@ class UserAlerts extends CController {
         $ug_raw     = API::UserGroup()->get([
             'output'       => ['usrgrpid', 'name', 'gui_access', 'users_status'],
             'selectRights' => 'extend',
-        ]);
+        ]) ?: [];
         $usergroups = array_column($ug_raw, null, 'usrgrpid');
 
         // ── Trigger actions with send-message operations ─────────────────────
@@ -55,7 +55,7 @@ class UserAlerts extends CController {
             'output'           => ['actionid', 'name', 'status'],
             'selectOperations' => 'extend',
             'filter'           => ['eventsource' => EVENT_SOURCE_TRIGGERS],
-        ]);
+        ]) ?: [];
 
         // Map:  userid   → [actionid => action]
         //       usrgrpid → [actionid => action]
@@ -78,11 +78,11 @@ class UserAlerts extends CController {
         // ── Users ─────────────────────────────────────────────────────────────
         $users = API::User()->get([
             'output'        => ['userid', 'username', 'name', 'surname', 'type'],
-            'selectMedias'  => ['mediaid', 'mediatypeid', 'sendto', 'active', 'severity', 'period'],
-            'selectUsrgrps' => ['usrgrpid', 'name'],
+            'selectMedias'  => 'extend',
+            'selectUsrgrps' => 'extend',
             'sortfield'     => 'username',
             'sortorder'     => 'ASC',
-        ]);
+        ]) ?: [];
 
         foreach ($users as &$user) {
             $uid  = $user['userid'];
