@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\ZabbixAutomation\Actions;
+namespace Modules\UserAlertOverview\Actions;
 
 use API;
 use CController;
@@ -85,14 +85,13 @@ class UserAlerts extends CController {
             $uid  = $user['userid'];
             $gids = array_column($user['usrgrps'], 'usrgrpid');
 
-            // Merge direct + group trigger actions
+            // Merge direct + group trigger actions; enabled first
             $all_acts = $direct_act[$uid] ?? [];
             foreach ($gids as $gid) {
                 foreach ($group_act[$gid] ?? [] as $aid => $act) {
                     $all_acts[$aid] = $act;
                 }
             }
-            // Sort: enabled actions first
             usort($all_acts, fn($a, $b) => (int)$a['status'] - (int)$b['status']);
             $user['trigger_actions'] = $all_acts;
 
@@ -107,13 +106,12 @@ class UserAlerts extends CController {
                     }
                 }
             }
-            // Sort: read-write first, then read, then denied
-            arsort($hg_perms);
+            arsort($hg_perms); // R/W first, then Read, then Denied
             $user['host_group_permissions'] = $hg_perms;
 
-            // Enrich media entries with type name; normalise sendto to string
+            // Enrich media with type name; normalise sendto to string
             foreach ($user['medias'] as &$media) {
-                $mtid                    = $media['mediatypeid'];
+                $mtid                     = $media['mediatypeid'];
                 $media['media_type_name'] = $media_types[$mtid]['name'] ?? '(unknown)';
                 if (is_array($media['sendto'])) {
                     $media['sendto'] = implode(', ', $media['sendto']);

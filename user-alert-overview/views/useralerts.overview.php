@@ -46,26 +46,26 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
 ?>
 <h1><?= htmlspecialchars($data['title']) ?></h1>
 
-<div class="automation-dashboard">
+<div class="uo-page">
 
     <!-- ── Description ──────────────────────────────────────────────────── -->
-    <div class="automation-description">
+    <div class="uo-description">
         Hər istifadəçi üçün alert konfiqurasiyasının tam mənzərəsi:
         qrup üzvlüyü, media növləri &amp; severity, trigger action-lar və host qrup icazələri.
         Axtarış qutusu ilə istənilən sahəyə görə filter etmək olar.
     </div>
 
     <!-- ── Summary cards ────────────────────────────────────────────────── -->
-    <div class="automation-cards">
+    <div class="uo-cards">
         <?php foreach ([
             [_('Total Users'),          $total_users],
             [_('With Media'),           $users_with_media],
             [_('With Trigger Actions'), $users_with_actions],
             [_('Fully Configured'),     $fully_configured],
         ] as [$label, $value]): ?>
-        <div class="automation-card">
-            <div class="automation-card-value"><?= (int) $value ?></div>
-            <div class="automation-card-label"><?= htmlspecialchars($label) ?></div>
+        <div class="uo-card">
+            <div class="uo-card-value"><?= (int) $value ?></div>
+            <div class="uo-card-label"><?= htmlspecialchars($label) ?></div>
         </div>
         <?php endforeach; ?>
     </div>
@@ -75,17 +75,16 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
         <input
             type="text"
             id="uo-search"
-            class="automation-input"
+            class="uo-search-input"
             placeholder="<?= _('Filter by username, group, media type, action name…') ?>"
-            style="width:400px"
             autocomplete="off"
         >
-        <span class="automation-hint" id="uo-count"></span>
+        <span class="uo-count" id="uo-count"></span>
     </div>
 
     <!-- ── Main table ───────────────────────────────────────────────────── -->
-    <div class="automation-section" style="padding:0; overflow:hidden;">
-        <table class="automation-table uo-table" id="uo-table">
+    <div class="uo-table-wrap">
+        <table class="uo-table" id="uo-table">
             <thead>
                 <tr>
                     <th class="uo-col-user"><?= _('User') ?></th>
@@ -97,11 +96,8 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
             </thead>
             <tbody>
             <?php if (empty($users)): ?>
-                <tr class="no-data">
-                    <td colspan="5"><?= _('No users found.') ?></td>
-                </tr>
+                <tr><td colspan="5" class="uo-no-data"><?= _('No users found.') ?></td></tr>
             <?php else: foreach ($users as $user):
-                $uid       = $user['userid'];
                 $fullname  = trim($user['name'] . ' ' . $user['surname']);
                 $utype     = (int) $user['type'];
                 $type_info = $user_type_labels[$utype] ?? ['label' => 'Unknown', 'class' => 'utype-user'];
@@ -109,7 +105,6 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                 $actions   = $user['trigger_actions'];
                 $hg_perms  = $user['host_group_permissions'];
 
-                // Build searchable text for JS filter
                 $search_text = strtolower(implode(' ', array_filter([
                     $user['username'],
                     $fullname,
@@ -120,9 +115,9 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                     implode(' ', array_map(fn($id) => $hostgroups[$id]['name'] ?? '', array_keys($hg_perms))),
                 ])));
             ?>
-            <tr class="uo-user-row" data-search="<?= htmlspecialchars($search_text) ?>">
+            <tr class="uo-row" data-search="<?= htmlspecialchars($search_text) ?>">
 
-                <!-- ── User identity ─────────────────────────────────── -->
+                <!-- User identity -->
                 <td>
                     <div class="uo-user-name"><?= htmlspecialchars($user['username']) ?></div>
                     <?php if ($fullname !== ''): ?>
@@ -131,7 +126,7 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                     <span class="uo-type-badge <?= $type_info['class'] ?>"><?= htmlspecialchars($type_info['label']) ?></span>
                 </td>
 
-                <!-- ── User groups ───────────────────────────────────── -->
+                <!-- User groups -->
                 <td>
                     <div class="uo-chip-list">
                     <?php if (empty($user['usrgrps'])): ?>
@@ -142,13 +137,13 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                     </div>
                 </td>
 
-                <!-- ── Media & severity ──────────────────────────────── -->
+                <!-- Media & severity -->
                 <td>
                     <?php if (empty($medias)): ?>
                         <span class="uo-empty"><?= _('No media configured') ?></span>
                     <?php else: foreach ($medias as $media):
-                        $sev_mask = (int) $media['severity'];
-                        $is_active = ((int) $media['active'] === 0); // 0 = active, 1 = disabled
+                        $sev_mask  = (int) $media['severity'];
+                        $is_active = ((int) $media['active'] === 0);
                     ?>
                     <div class="uo-media-row<?= $is_active ? '' : ' uo-media-disabled' ?>">
                         <div class="uo-media-header">
@@ -162,17 +157,14 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                             <?php foreach ($severities as $s):
                                 $on = ($sev_mask >> $s['bit']) & 1;
                             ?>
-                            <span
-                                class="uo-sev-badge <?= $on ? $s['class'] : 'sev-off' ?>"
-                                title="<?= htmlspecialchars($s['title']) ?>"
-                            ><?= $s['label'] ?></span>
+                            <span class="uo-sev-badge <?= $on ? $s['class'] : 'sev-off' ?>" title="<?= htmlspecialchars($s['title']) ?>"><?= $s['label'] ?></span>
                             <?php endforeach; ?>
                         </div>
                     </div>
                     <?php endforeach; endif; ?>
                 </td>
 
-                <!-- ── Trigger actions ───────────────────────────────── -->
+                <!-- Trigger actions -->
                 <td>
                     <div class="uo-chip-list">
                     <?php if (empty($actions)): ?>
@@ -180,15 +172,12 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                     <?php else: foreach ($actions as $act):
                         $enabled = ((int) $act['status'] === 0);
                     ?>
-                        <span
-                            class="uo-chip <?= $enabled ? 'uo-chip-action' : 'uo-chip-action-off' ?>"
-                            title="<?= htmlspecialchars($act['name']) . ($enabled ? '' : ' (' . _('disabled') . ')') ?>"
-                        ><span class="uo-act-dot"><?= $enabled ? '●' : '○' ?></span><?= htmlspecialchars($act['name']) ?></span>
+                        <span class="uo-chip <?= $enabled ? 'uo-chip-action' : 'uo-chip-action-off' ?>" title="<?= htmlspecialchars($act['name']) . ($enabled ? '' : ' (' . _('disabled') . ')') ?>"><span class="uo-act-dot"><?= $enabled ? '●' : '○' ?></span><?= htmlspecialchars($act['name']) ?></span>
                     <?php endforeach; endif; ?>
                     </div>
                 </td>
 
-                <!-- ── Host group access ─────────────────────────────── -->
+                <!-- Host group access -->
                 <td>
                     <div class="uo-chip-list">
                     <?php if (empty($hg_perms)): ?>
@@ -197,10 +186,7 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                         $gname     = $hostgroups[$gid]['name'] ?? '(id:' . $gid . ')';
                         $perm_info = $perm_labels[$perm] ?? ['label' => '?', 'class' => 'perm-deny'];
                     ?>
-                        <span
-                            class="uo-chip uo-chip-perm <?= $perm_info['class'] ?>"
-                            title="<?= htmlspecialchars($gname) ?> — <?= htmlspecialchars($perm_info['label']) ?>"
-                        ><?= htmlspecialchars($gname) ?>&nbsp;<span class="uo-perm-level">[<?= $perm_info['label'] ?>]</span></span>
+                        <span class="uo-chip uo-chip-perm <?= $perm_info['class'] ?>" title="<?= htmlspecialchars($gname) ?> — <?= htmlspecialchars($perm_info['label']) ?>"><?= htmlspecialchars($gname) ?>&nbsp;<span class="uo-perm-level">[<?= $perm_info['label'] ?>]</span></span>
                     <?php endforeach; endif; ?>
                     </div>
                 </td>
@@ -217,7 +203,7 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
 (function () {
     'use strict';
     var search  = document.getElementById('uo-search');
-    var rows    = document.querySelectorAll('#uo-table .uo-user-row');
+    var rows    = document.querySelectorAll('#uo-table .uo-row');
     var counter = document.getElementById('uo-count');
 
     function updateCounter(n) {

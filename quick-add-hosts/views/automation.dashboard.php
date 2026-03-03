@@ -40,7 +40,7 @@ echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.cs
             </div>
 
             <div class="automation-quick-link-item">
-                <a href="zabbix.php?action=automation.user.alerts" class="automation-link-title"><?= _('User Alert Overview') ?></a>
+                <a href="zabbix.php?action=useralerts.overview" class="automation-link-title"><?= _('User Alert Overview') ?></a>
                 <div class="automation-link-desc"><?= _('See every user\'s media, severity settings, trigger actions and host group access in one place.') ?></div>
             </div>
 

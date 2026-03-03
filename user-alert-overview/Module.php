@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\ZabbixAutomation;
+namespace Modules\UserAlertOverview;
 
 use APP;
 use CMenu;
@@ -12,7 +12,7 @@ use Zabbix\Core\CModule;
 class Module extends CModule {
 
     public function getStylesheets(): array {
-        return ['assets/css/automation.css'];
+        return ['assets/css/useralerts.css'];
     }
 
     public function init(): void {
@@ -22,10 +22,8 @@ class Module extends CModule {
             (new CMenuItem(_('Automation')))
                 ->setIcon('zi-alert-with-content')
                 ->setSubMenu(new CMenu([
-                    (new CMenuItem(_('Dashboard')))
-                        ->setAction('automation.dashboard'),
-                    (new CMenuItem(_('Quick Add Hosts')))
-                        ->setAction('automation.bulk.hosts'),
+                    (new CMenuItem(_('User Alert Overview')))
+                        ->setAction('useralerts.overview'),
                 ]))
         );
     }
