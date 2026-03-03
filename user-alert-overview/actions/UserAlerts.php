@@ -27,6 +27,16 @@ class UserAlerts extends CController {
         $mt_raw      = API::MediaType()->get(['output' => ['mediatypeid', 'name', 'type']]) ?: [];
         $media_types = array_column($mt_raw, null, 'mediatypeid');
 
+        // ── Roles (Zabbix 6.2+: user.type removed, replaced by roleid) ───────
+        // Role type: 1=User, 2=Admin, 3=Super admin
+        $roles = [];
+        try {
+            $roles_raw = API::Role()->get(['output' => ['roleid', 'name', 'type']]) ?: [];
+            $roles     = array_column($roles_raw, null, 'roleid');
+        } catch (\Throwable $e) {
+            // Older Zabbix — roles API not available.
+        }
+
         // ── Host groups ──────────────────────────────────────────────────────
         $hg_raw     = API::HostGroup()->get(['output' => ['groupid', 'name']]) ?: [];
         $hostgroups = array_column($hg_raw, null, 'groupid');
@@ -77,7 +87,7 @@ class UserAlerts extends CController {
 
         // ── Users ─────────────────────────────────────────────────────────────
         $users = API::User()->get([
-            'output'        => ['userid', 'username', 'name', 'surname', 'type'],
+            'output'        => ['userid', 'username', 'name', 'surname', 'roleid'],
             'selectMedias'  => 'extend',
             'selectUsrgrps' => 'extend',
             'sortfield'     => 'username',
@@ -127,6 +137,7 @@ class UserAlerts extends CController {
         $this->setResponse(new CControllerResponseData([
             'title'           => _('User Alert Overview'),
             'users'           => $users,
+            'roles'           => $roles,
             'usergroups'      => $usergroups,
             'media_types'     => $media_types,
             'hostgroups'      => $hostgroups,

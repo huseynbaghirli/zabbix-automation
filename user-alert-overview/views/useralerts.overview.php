@@ -12,11 +12,17 @@ declare(strict_types=1);
  */
 
 // ── Static lookup tables ─────────────────────────────────────────────────────
-$user_type_labels = [
-    USER_TYPE_ZABBIX_USER  => ['label' => 'User',        'class' => 'utype-user'],
-    USER_TYPE_ZABBIX_ADMIN => ['label' => 'Admin',       'class' => 'utype-admin'],
-    USER_TYPE_SUPER_ADMIN  => ['label' => 'Super Admin', 'class' => 'utype-super'],
+
+// Role type values: 1=User, 2=Admin, 3=Super admin (Zabbix 6.2+)
+// Fallback for older versions that still have user.type directly
+$role_type_labels = [
+    1 => ['label' => 'User',        'class' => 'utype-user'],
+    2 => ['label' => 'Admin',       'class' => 'utype-admin'],
+    3 => ['label' => 'Super Admin', 'class' => 'utype-super'],
 ];
+
+$roles      = $data['roles'] ?? [];
+$hostgroups = $data['hostgroups'];
 
 $perm_labels = [
     0 => ['label' => 'Denied', 'class' => 'perm-deny'],
@@ -34,8 +40,7 @@ $severities = [
     ['bit' => 5, 'label' => 'D',   'title' => 'Disaster',       'class' => 'sev-dis'],
 ];
 
-$users      = $data['users'];
-$hostgroups = $data['hostgroups'];
+$users = $data['users'];
 
 // ── Summary counts ────────────────────────────────────────────────────────────
 $total_users        = count($users);
@@ -99,8 +104,10 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                 <tr><td colspan="5" class="uo-no-data"><?= _('No users found.') ?></td></tr>
             <?php else: foreach ($users as $user):
                 $fullname  = trim($user['name'] . ' ' . $user['surname']);
-                $utype     = (int) $user['type'];
-                $type_info = $user_type_labels[$utype] ?? ['label' => 'Unknown', 'class' => 'utype-user'];
+                // Zabbix 6.2+: type is derived from role; older: user.type field
+                $roleid    = $user['roleid'] ?? null;
+                $role_type = $roleid && isset($roles[$roleid]) ? (int) $roles[$roleid]['type'] : 0;
+                $type_info = $role_type_labels[$role_type] ?? ['label' => 'User', 'class' => 'utype-user'];
                 $medias    = $user['medias'] ?? [];
                 $actions   = $user['trigger_actions'];
                 $hg_perms  = $user['host_group_permissions'];
