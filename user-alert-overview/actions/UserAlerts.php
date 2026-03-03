@@ -34,8 +34,11 @@ class UserAlerts extends CController {
         // ── Template groups (Zabbix 6.2+) ────────────────────────────────────
         $template_groups = [];
         try {
-            $tg_raw          = API::TemplateGroup()->get(['output' => ['groupid', 'name']]);
-            $template_groups = array_column($tg_raw, null, 'groupid');
+            $tg_api = API::TemplateGroup();
+            if ($tg_api !== null) {
+                $tg_raw          = $tg_api->get(['output' => ['groupid', 'name']]);
+                $template_groups = array_column($tg_raw, null, 'groupid');
+            }
         } catch (\Throwable $e) {
             // Not available in older versions — ignore.
         }
@@ -43,14 +46,14 @@ class UserAlerts extends CController {
         // ── User groups with host-group access rights ─────────────────────────
         $ug_raw     = API::UserGroup()->get([
             'output'       => ['usrgrpid', 'name', 'gui_access', 'users_status'],
-            'selectRights' => ['id', 'permission'],
+            'selectRights' => 'extend',
         ]);
         $usergroups = array_column($ug_raw, null, 'usrgrpid');
 
         // ── Trigger actions with send-message operations ─────────────────────
         $actions_raw = API::Action()->get([
             'output'           => ['actionid', 'name', 'status'],
-            'selectOperations' => ['operationtype', 'opmessage', 'opmessage_usr', 'opmessage_grp'],
+            'selectOperations' => 'extend',
             'filter'           => ['eventsource' => EVENT_SOURCE_TRIGGERS],
         ]);
 
@@ -59,7 +62,7 @@ class UserAlerts extends CController {
         $direct_act = [];
         $group_act  = [];
         foreach ($actions_raw as $act) {
-            foreach ($act['operations'] as $op) {
+            foreach ((array) ($act['operations'] ?? []) as $op) {
                 if ((int) $op['operationtype'] !== OPERATION_TYPE_MESSAGE) {
                     continue;
                 }
@@ -83,7 +86,7 @@ class UserAlerts extends CController {
 
         foreach ($users as &$user) {
             $uid  = $user['userid'];
-            $gids = array_column($user['usrgrps'], 'usrgrpid');
+            $gids = array_column($user['usrgrps'] ?? [], 'usrgrpid');
 
             // Merge direct + group trigger actions; enabled first
             $all_acts = $direct_act[$uid] ?? [];
@@ -110,7 +113,7 @@ class UserAlerts extends CController {
             $user['host_group_permissions'] = $hg_perms;
 
             // Enrich media with type name; normalise sendto to string
-            foreach ($user['medias'] as &$media) {
+            foreach ($user['medias'] ?? [] as &$media) {
                 $mtid                     = $media['mediatypeid'];
                 $media['media_type_name'] = $media_types[$mtid]['name'] ?? '(unknown)';
                 if (is_array($media['sendto'])) {

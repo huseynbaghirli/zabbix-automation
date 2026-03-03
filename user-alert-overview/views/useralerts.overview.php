@@ -101,7 +101,7 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                 $fullname  = trim($user['name'] . ' ' . $user['surname']);
                 $utype     = (int) $user['type'];
                 $type_info = $user_type_labels[$utype] ?? ['label' => 'Unknown', 'class' => 'utype-user'];
-                $medias    = $user['medias'];
+                $medias    = $user['medias'] ?? [];
                 $actions   = $user['trigger_actions'];
                 $hg_perms  = $user['host_group_permissions'];
 
