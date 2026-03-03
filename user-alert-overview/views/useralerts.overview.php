@@ -108,7 +108,7 @@ $fully_configured   = count(array_filter($users, fn($u) => !empty($u['medias']) 
                 $search_text = strtolower(implode(' ', array_filter([
                     $user['username'],
                     $fullname,
-                    implode(' ', array_column($user['usrgrps'], 'name')),
+                    implode(' ', array_column($user['usrgrps'] ?? [], 'name')),
                     implode(' ', array_column($medias, 'media_type_name')),
                     implode(' ', array_map(fn($m) => $m['sendto'], $medias)),
                     implode(' ', array_column($actions, 'name')),
