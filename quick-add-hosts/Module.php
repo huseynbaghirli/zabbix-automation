@@ -26,6 +26,8 @@ class Module extends CModule {
                         ->setAction('automation.dashboard'),
                     (new CMenuItem(_('Quick Add Hosts')))
                         ->setAction('automation.bulk.hosts'),
+                    (new CMenuItem(_('User Alert Overview')))
+                        ->setAction('automation.user.alerts'),
                 ]))
         );
     }

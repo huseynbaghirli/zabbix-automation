@@ -598,3 +598,176 @@
 }
 
 .btn-add-row:hover { background: #f7f7f7; border-color: #666; color: #333; }
+
+/* ============================================================
+   User Alert Overview
+   ============================================================ */
+
+/* ── Search bar ──────────────────────────────────────────── */
+.uo-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Table column widths ─────────────────────────────────── */
+.uo-table { table-layout: fixed; }
+.uo-table .uo-col-user    { width: 170px; }
+.uo-table .uo-col-groups  { width: 160px; }
+.uo-table .uo-col-media   { width: auto;  }
+.uo-table .uo-col-actions { width: 200px; }
+.uo-table .uo-col-access  { width: 220px; }
+
+.uo-table td {
+    padding: 10px 12px;
+    vertical-align: top;
+}
+
+/* ── User identity cell ──────────────────────────────────── */
+.uo-user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #222;
+}
+
+.uo-user-full {
+    font-size: 0.8rem;
+    color: #555;
+    margin-top: 1px;
+}
+
+.uo-type-badge {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.utype-user  { background: #e8f0fe; color: #1558a8; border: 1px solid #c5d8f5; }
+.utype-admin { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+.utype-super { background: #fdecea; color: #721c24; border: 1px solid #f5c5c5; }
+
+/* ── Generic chip list ───────────────────────────────────── */
+.uo-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.uo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.74rem;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+}
+
+.uo-chip-group      { background: #f0f0f0; color: #444;    border: 1px solid #ddd; }
+.uo-chip-action     { background: #e6f7ee; color: #155724; border: 1px solid #b7dfca; }
+.uo-chip-action-off { background: #f7f7f7; color: #888;    border: 1px solid #ddd; }
+
+.uo-act-dot {
+    font-size: 0.6rem;
+    flex-shrink: 0;
+}
+
+/* ── Permission chips ────────────────────────────────────── */
+.uo-chip-perm { max-width: 210px; }
+.perm-deny    { background: #fdecea; color: #721c24; border: 1px solid #f5c5c5; }
+.perm-read    { background: #e8f0fe; color: #1558a8; border: 1px solid #c5d8f5; }
+.perm-rw      { background: #e6f7ee; color: #155724; border: 1px solid #b7dfca; }
+
+.uo-perm-level {
+    font-weight: 700;
+    font-size: 0.64rem;
+    opacity: 0.85;
+}
+
+/* ── Media rows ──────────────────────────────────────────── */
+.uo-media-row {
+    padding: 6px 0;
+    border-bottom: 1px dashed #ebebeb;
+    margin-bottom: 2px;
+}
+
+.uo-media-row:last-child { border-bottom: none; margin-bottom: 0; }
+
+.uo-media-disabled { opacity: 0.45; }
+
+.uo-media-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.uo-media-type {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #333;
+}
+
+.uo-badge-off {
+    font-size: 0.63rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #e0e0e0;
+    color: #666;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.uo-media-dest {
+    font-size: 0.76rem;
+    color: #555;
+    margin-bottom: 4px;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Severity badge row ──────────────────────────────────── */
+.uo-sev-row {
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+}
+
+.uo-sev-badge {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: default;
+    user-select: none;
+}
+
+/* Severity colours matching Zabbix defaults */
+.sev-off  { background: #f0f0f0; color: #ccc; }
+.sev-nc   { background: #97AAB3; color: #fff; }
+.sev-info { background: #7499FF; color: #fff; }
+.sev-warn { background: #FFC859; color: #333; }
+.sev-avg  { background: #FFA059; color: #fff; }
+.sev-high { background: #E97659; color: #fff; }
+.sev-dis  { background: #E45959; color: #fff; }
+
+/* ── Empty state placeholder ─────────────────────────────── */
+.uo-empty {
+    color: #bbb;
+    font-style: italic;
+    font-size: 0.8rem;
+}

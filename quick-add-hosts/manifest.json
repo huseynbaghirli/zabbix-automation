@@ -20,6 +20,11 @@
         "automation.bulk.hosts.submit": {
             "class": "BulkHostsSubmit",
             "layout": "layout.javascript"
+        },
+        "automation.user.alerts": {
+            "class": "UserAlerts",
+            "layout": "layout.htmlpage",
+            "view": "automation.user.alerts"
         }
     }
 }
