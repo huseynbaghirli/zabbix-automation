@@ -15,11 +15,9 @@ echo '<style>' . file_get_contents(dirname(__DIR__) . '/assets/css/automation.cs
 <script type="application/json" id="js-groups"><?= json_encode(array_values($data['groups']),    JSON_UNESCAPED_UNICODE) ?></script>
 <script type="application/json" id="js-templates"><?= json_encode(array_values($data['templates']), JSON_UNESCAPED_UNICODE) ?></script>
 <script type="application/json" id="js-proxies"><?= json_encode(array_values($data['proxies']),    JSON_UNESCAPED_UNICODE) ?></script>
+<script type="application/json" id="js-zabbix-server"><?= json_encode($data['zabbix_server'] ?? '') ?></script>
 
 <?php
-// Zabbix 7.x validates _csrf_token with the FULL action name as context
-// (for module controllers: CCsrfTokenHelper::check($token, $this->action)).
-// The token MUST be generated with the exact action name 'automation.bulk.hosts.submit'.
 $csrf_token = '';
 if (class_exists('CCsrfTokenHelper')) {
     try { $csrf_token = CCsrfTokenHelper::get('automation.bulk.hosts.submit'); }
@@ -29,6 +27,17 @@ if (class_exists('CCsrfTokenHelper')) {
 <input type="hidden" id="zbx-csrf-token" name="_csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
 
 <div class="automation-section">
+
+    <!-- Zabbix server IP (used when no proxy is selected) -->
+    <div class="zbx-server-row">
+        <label for="zbx-server-ip"><?= _('Zabbix Server IP') ?></label>
+        <input type="text" id="zbx-server-ip"
+               class="automation-input-sm"
+               style="width:200px"
+               value="<?= htmlspecialchars($data['zabbix_server'] ?? '') ?>"
+               placeholder="10.0.0.1">
+        <span class="automation-hint"><?= _('Used as --server-host when no proxy is assigned to a row.') ?></span>
+    </div>
 
     <!-- Table -->
     <div class="bulk-table-wrapper">
@@ -70,6 +79,24 @@ if (class_exists('CCsrfTokenHelper')) {
     <div class="selector-panel-footer">
         <button type="button" id="btn-selector-apply" class="automation-btn"><?= _('Apply') ?></button>
         <button type="button" id="btn-selector-cancel" class="btn-selector-cancel"><?= _('Cancel') ?></button>
+    </div>
+</div>
+
+<!-- Install agent command panel -->
+<div class="install-panel" id="install-panel">
+    <div class="install-panel-header">
+        <span><?= _('Install Zabbix Agent') ?></span>
+        <button type="button" id="btn-install-close" class="install-panel-close">✕</button>
+    </div>
+    <div class="install-panel-body">
+        <div class="install-panel-label"><?= _('Run on the target host as root:') ?></div>
+        <div class="install-cmd-wrap">
+            <code id="install-cmd-text" class="install-cmd"></code>
+        </div>
+        <button type="button" id="btn-install-copy" class="automation-btn" style="margin-top:10px">
+            <?= _('Copy') ?>
+        </button>
+        <span id="install-copy-ok" class="install-copy-ok"></span>
     </div>
 </div>
 

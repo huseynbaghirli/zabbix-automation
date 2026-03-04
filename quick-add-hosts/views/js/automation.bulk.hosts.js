@@ -14,9 +14,10 @@
 (function () {
 
     /* ── Data from PHP ──────────────────────────────────── */
-    const GROUPS    = JSON.parse(document.getElementById('js-groups').textContent    || '[]');
-    const TEMPLATES = JSON.parse(document.getElementById('js-templates').textContent || '[]');
-    const PROXIES   = JSON.parse(document.getElementById('js-proxies').textContent   || '[]');
+    const GROUPS    = JSON.parse(document.getElementById('js-groups').textContent        || '[]');
+    const TEMPLATES = JSON.parse(document.getElementById('js-templates').textContent     || '[]');
+    const PROXIES   = JSON.parse(document.getElementById('js-proxies').textContent       || '[]');
+    const ZBX_SVR   = JSON.parse(document.getElementById('js-zabbix-server').textContent || '""');
 
     /* ── State ──────────────────────────────────────────── */
     let rowCounter   = 0;
@@ -28,14 +29,22 @@
     document.getElementById('btn-selector-apply').addEventListener('click', applySelector);
     document.getElementById('btn-selector-cancel').addEventListener('click', closeSelector);
     document.getElementById('selector-search').addEventListener('input', filterSelectorList);
+    document.getElementById('btn-install-close').addEventListener('click', closeInstallPanel);
+    document.getElementById('btn-install-copy').addEventListener('click', copyInstallCmd);
 
-    // Close panel when clicking outside
+    // Close panels when clicking outside
     document.addEventListener('click', function (e) {
-        const panel = document.getElementById('selector-panel');
-        if (panel.style.display !== 'none' &&
-            !panel.contains(e.target) &&
+        const selPanel = document.getElementById('selector-panel');
+        if (selPanel.style.display !== 'none' &&
+            !selPanel.contains(e.target) &&
             !e.target.classList.contains('btn-select')) {
             closeSelector();
+        }
+        const instPanel = document.getElementById('install-panel');
+        if (instPanel.style.display !== 'none' &&
+            !instPanel.contains(e.target) &&
+            !e.target.classList.contains('btn-install')) {
+            closeInstallPanel();
         }
     });
 
@@ -169,11 +178,19 @@
         delBtn.textContent = '✕';
         delBtn.addEventListener('click', () => deleteRow(tr));
 
+        const instBtn = document.createElement('button');
+        instBtn.type      = 'button';
+        instBtn.className = 'btn-install';
+        instBtn.title     = 'Generate install-agent command';
+        instBtn.textContent = '⬇';
+        instBtn.addEventListener('click', (e) => { e.stopPropagation(); openInstallPanel(instBtn, tr); });
+
         const actWrap = document.createElement('div');
         actWrap.className = 'row-actions';
         actWrap.appendChild(dupBtn);
         actWrap.appendChild(dupIpBtn);
         actWrap.appendChild(delBtn);
+        actWrap.appendChild(instBtn);
         tdAct.appendChild(actWrap);
 
         /* ── Assemble ── */
@@ -588,6 +605,83 @@
     function showResult(el, type, text) {
         el.className  = 'automation-results' + (type ? ' ' + type : '');
         el.textContent = text;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       INSTALL AGENT COMMAND PANEL
+       ═══════════════════════════════════════════════════════ */
+
+    function buildInstallCommand(rowEl) {
+        const hostname = rowEl.querySelector('.f-hostname').value.trim();
+        const proxyId  = rowEl.dataset.proxyId || '';
+
+        // --server-host: proxy address if proxy selected, else Zabbix server IP field
+        let serverHost = '';
+        if (proxyId) {
+            const proxy = PROXIES.find(p => String(p.proxyid) === String(proxyId));
+            if (proxy && proxy.address) serverHost = proxy.address;
+        }
+        if (!serverHost) {
+            serverHost = (document.getElementById('zbx-server-ip').value || '').trim();
+        }
+        if (!serverHost) {
+            serverHost = ZBX_SVR || '';
+        }
+
+        // Script URL: derive from current page origin + path prefix
+        const base      = window.location.href.split('zabbix.php')[0];
+        const scriptUrl = base + 'install-zabbix.sh';
+
+        // Universal curl/wget one-liner
+        let cmd = '$(command -v curl && echo "-fsSL" || echo "wget -qO-")';
+        cmd    += ' ' + scriptUrl;
+        cmd    += ' | bash -s --';
+        if (serverHost) cmd += " --server-host '" + serverHost + "'";
+        if (hostname)   cmd += " --hostname '"    + hostname   + "'";
+
+        return cmd;
+    }
+
+    function openInstallPanel(anchorEl, rowEl) {
+        const panel = document.getElementById('install-panel');
+        const cmd   = buildInstallCommand(rowEl);
+
+        document.getElementById('install-cmd-text').textContent = cmd;
+        document.getElementById('install-copy-ok').textContent  = '';
+
+        // Position below the anchor button
+        const rect = anchorEl.getBoundingClientRect();
+        const vpW  = window.innerWidth;
+        let left   = rect.left + window.scrollX;
+        if (left + 560 > vpW) left = Math.max(8, vpW - 568);
+
+        panel.style.top     = (rect.bottom + window.scrollY + 6) + 'px';
+        panel.style.left    = left + 'px';
+        panel.style.display = 'block';
+    }
+
+    function closeInstallPanel() {
+        document.getElementById('install-panel').style.display = 'none';
+    }
+
+    function copyInstallCmd() {
+        const text = document.getElementById('install-cmd-text').textContent;
+        const ok   = document.getElementById('install-copy-ok');
+        navigator.clipboard.writeText(text).then(() => {
+            ok.textContent = '✓ Copied!';
+            setTimeout(() => { ok.textContent = ''; }, 2500);
+        }).catch(() => {
+            // Fallback for non-HTTPS contexts
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;opacity:0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            ok.textContent = '✓ Copied!';
+            setTimeout(() => { ok.textContent = ''; }, 2500);
+        });
     }
 
 })();

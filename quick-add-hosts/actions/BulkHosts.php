@@ -38,7 +38,7 @@ class BulkHosts extends CController {
         $proxies = [];
         try {
             $proxies = API::Proxy()->get([
-                'output'    => ['proxyid', 'name'],
+                'output'    => ['proxyid', 'name', 'address'],
                 'sortfield' => 'name',
                 'sortorder' => 'ASC',
             ]);
@@ -46,12 +46,16 @@ class BulkHosts extends CController {
             // Proxy API not available — leave empty.
         }
 
+        // Zabbix server address for agent config (frontend config constant).
+        $zabbix_server = defined('ZBX_SERVER') ? ZBX_SERVER : '';
+
         $this->setResponse(new CControllerResponseData([
-            'title'     => _('Quick Add Hosts'),
-            'groups'    => $groups,
-            'templates' => $templates,
-            'proxies'   => $proxies,
-            'user'      => ['debug_mode' => $this->getDebugMode()],
+            'title'         => _('Quick Add Hosts'),
+            'groups'        => $groups,
+            'templates'     => $templates,
+            'proxies'       => $proxies,
+            'zabbix_server' => $zabbix_server,
+            'user'          => ['debug_mode' => $this->getDebugMode()],
         ]));
     }
 }
