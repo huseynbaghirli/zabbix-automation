@@ -37,13 +37,31 @@ class BulkHosts extends CController {
 
         $proxies = [];
         try {
+            // Zabbix 7.x: proxy has a direct 'address' field (passive proxy = filled, active = empty).
             $proxies = API::Proxy()->get([
-                'output'    => ['proxyid', 'name', 'address'],
+                'output'    => ['proxyid', 'name', 'address', 'operating_mode'],
                 'sortfield' => 'name',
                 'sortorder' => 'ASC',
             ]);
         } catch (\Throwable $e) {
-            // Proxy API not available — leave empty.
+            try {
+                // Zabbix 6.x: passive proxy address lives in its interface record.
+                $raw = API::Proxy()->get([
+                    'output'          => ['proxyid', 'name'],
+                    'selectInterface' => ['ip', 'dns', 'useip'],
+                    'sortfield'       => 'name',
+                    'sortorder'       => 'ASC',
+                ]);
+                foreach ($raw as &$p) {
+                    $iface       = $p['interface'] ?? [];
+                    $p['address'] = ($iface['useip'] ?? '1') == '1'
+                        ? ($iface['ip']  ?? '')
+                        : ($iface['dns'] ?? '');
+                }
+                $proxies = $raw;
+            } catch (\Throwable $e2) {
+                // Proxy API not available — leave empty.
+            }
         }
 
         // Zabbix server address for agent config (frontend config constant).

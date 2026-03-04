@@ -615,11 +615,17 @@
         const hostname = rowEl.querySelector('.f-hostname').value.trim();
         const proxyId  = rowEl.dataset.proxyId || '';
 
-        // --server-host: proxy address if proxy selected, else Zabbix server IP field
+        // --server-host priority:
+        //   1. proxy.address  (passive proxy in Zabbix 7.x, or 6.x interface ip/dns)
+        //   2. proxy.name     (active proxy in 7.x: address is empty, name is usually FQDN)
+        //   3. "Zabbix Server IP" input on the page
+        //   4. ZBX_SERVER constant from PHP
         let serverHost = '';
         if (proxyId) {
             const proxy = PROXIES.find(p => String(p.proxyid) === String(proxyId));
-            if (proxy && proxy.address) serverHost = proxy.address;
+            if (proxy) {
+                serverHost = (proxy.address || '').trim() || (proxy.name || '').trim();
+            }
         }
         if (!serverHost) {
             serverHost = (document.getElementById('zbx-server-ip').value || '').trim();
