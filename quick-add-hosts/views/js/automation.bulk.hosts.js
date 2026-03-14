@@ -634,9 +634,9 @@
             serverHost = ZBX_SVR || '';
         }
 
-        // Script URL: served by the zabbix-installer module (no auth required)
+        // Script URL: static .sh file served from Zabbix web root (no auth required)
         const base      = window.location.href.split('zabbix.php')[0];
-        const scriptUrl = base + 'modules/zabbix-installer/install.php';
+        const scriptUrl = base + 'install-zabbix.sh';
 
         // Universal curl/wget one-liner
         let cmd = '$(command -v curl && echo "-fsSL" || echo "wget -qO-")';
