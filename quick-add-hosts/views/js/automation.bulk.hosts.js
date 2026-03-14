@@ -634,9 +634,9 @@
             serverHost = ZBX_SVR || '';
         }
 
-        // Script URL: derive from current page origin + path prefix
+        // Script URL: served by the zabbix-installer module (no auth required)
         const base      = window.location.href.split('zabbix.php')[0];
-        const scriptUrl = base + 'install-zabbix.sh';
+        const scriptUrl = base + 'modules/zabbix-installer/install.php';
 
         // Universal curl/wget one-liner
         let cmd = '$(command -v curl && echo "-fsSL" || echo "wget -qO-")';

@@ -1,0 +1,8 @@
+{
+    "manifest_version": 2,
+    "id": "zabbix-installer",
+    "name": "Zabbix Installer",
+    "namespace": "ZabbixInstaller",
+    "version": "1.0.0",
+    "description": "Serves the install-zabbix.sh script over plain HTTP without requiring Zabbix authentication."
+}
