@@ -1,0 +1,6 @@
+<Files "install-zabbix.sh">
+    ForceType text/plain
+    Header set Content-Type "text/plain; charset=utf-8"
+    Header set Cache-Control "no-store"
+    Require all granted
+</Files>

@@ -5,11 +5,5 @@
     "namespace": "ZabbixInstaller",
     "version": "1.0.0",
     "author": "zabbix-automation",
-    "description": "Serves install-zabbix.sh over HTTP via Zabbix action routing (no authentication required).",
-    "actions": {
-        "zabbix-installer.script": {
-            "class": "InstallScript",
-            "auth_required": false
-        }
-    }
+    "description": "Serves install-zabbix.sh via .htaccess, no Apache config changes needed."
 }
