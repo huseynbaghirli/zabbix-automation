@@ -64,8 +64,20 @@ class BulkHosts extends CController {
             }
         }
 
-        // Zabbix server address for agent config (frontend config constant).
-        $zabbix_server = defined('ZBX_SERVER') ? ZBX_SERVER : '';
+        // Zabbix server address for agent config.
+        // ZBX_SERVER constant is often 'localhost'/'127.0.0.1' when the server
+        // runs on the same host as the frontend — useless for remote agents.
+        // Fall back to the web server's own address in that case.
+        $zbx_const = defined('ZBX_SERVER') ? ZBX_SERVER : '';
+        $local      = ['', 'localhost', '127.0.0.1', '::1'];
+        if (!in_array($zbx_const, $local, true)) {
+            $zabbix_server = $zbx_const;
+        } else {
+            // Use SERVER_ADDR (real IP) or strip port from HTTP_HOST
+            $zabbix_server = $_SERVER['SERVER_ADDR']
+                ?? preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '')
+                ?? '';
+        }
 
         $this->setResponse(new CControllerResponseData([
             'title'         => _('Quick Add Hosts'),
