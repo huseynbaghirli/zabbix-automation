@@ -31,6 +31,11 @@
     document.getElementById('selector-search').addEventListener('input', filterSelectorList);
     document.getElementById('btn-install-close').addEventListener('click', closeInstallPanel);
     document.getElementById('btn-install-copy').addEventListener('click', copyInstallCmd);
+    document.getElementById('btn-gen-install').addEventListener('click', generateInstallCommands);
+    document.getElementById('btn-install-modal-close').addEventListener('click', closeInstallModal);
+    document.getElementById('install-modal-overlay').addEventListener('click', function (e) {
+        if (e.target === this) closeInstallModal();
+    });
 
     // Close panels when clicking outside
     document.addEventListener('click', function (e) {
@@ -634,9 +639,9 @@
             serverHost = ZBX_SVR || '';
         }
 
-        // Script URL: PHP wrapper in module dir, served directly by Apache (no Zabbix auth)
+        // Script URL: static .sh served via .htaccess in module dir (no Zabbix auth)
         const base      = window.location.href.split('zabbix.php')[0];
-        const scriptUrl = base + 'modules/zabbix_automation/install-zabbix.php';
+        const scriptUrl = base + 'modules/zabbix-installer/install-zabbix.sh';
 
         // Universal curl/wget one-liner
         let cmd = '$(command -v curl && echo "-fsSL" || echo "wget -qO-")';
@@ -688,6 +693,162 @@
             ok.textContent = '✓ Copied!';
             setTimeout(() => { ok.textContent = ''; }, 2500);
         });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       BULK INSTALL COMMANDS MODAL
+       ═══════════════════════════════════════════════════════ */
+
+    async function generateInstallCommands() {
+        const rows = [...document.querySelectorAll('.host-row')];
+        const base      = window.location.href.split('zabbix.php')[0];
+        const scriptUrl = base + 'modules/zabbix-installer/install-zabbix.sh';
+        const apiUrl    = base + 'api_jsonrpc.php';
+        const zbxServer = (document.getElementById('zbx-server-ip').value || '').trim() || ZBX_SVR;
+
+        // Collect rows that have both hostname and IP filled in
+        const validRows = rows.map(tr => ({
+            hostname:  tr.querySelector('.f-hostname').value.trim(),
+            ip:        tr.querySelector('.f-ip').value.trim(),
+            proxyId:   tr.dataset.proxyId   || '',
+            proxyName: tr.dataset.proxyName || '',
+        })).filter(r => r.hostname !== '' && r.ip !== '');
+
+        if (validRows.length === 0) {
+            alert('Please fill in Hostname and IP Address for at least one row.');
+            return;
+        }
+
+        // Fetch proxy addresses from the Zabbix API for every unique proxy in use
+        const uniqueProxyIds = [...new Set(validRows.filter(r => r.proxyId).map(r => r.proxyId))];
+        const proxyMap = {}; // proxyid → { address, name }
+
+        if (uniqueProxyIds.length > 0) {
+            try {
+                const resp = await fetch(apiUrl, {
+                    method:      'POST',
+                    credentials: 'include',
+                    headers:     { 'Content-Type': 'application/json' },
+                    body:        JSON.stringify({
+                        jsonrpc: '2.0',
+                        method:  'proxy.get',
+                        params:  { proxyids: uniqueProxyIds, output: ['address', 'name'] },
+                        id:      1,
+                    }),
+                });
+                const json = await resp.json();
+                if (json.result) {
+                    json.result.forEach(p => {
+                        // Passive proxy → address field; active proxy → address is empty, use name
+                        proxyMap[String(p.proxyid)] = {
+                            address: (p.address || '').trim() || (p.name || '').trim(),
+                            name:    p.name,
+                        };
+                    });
+                }
+            } catch (e) {
+                // API unavailable — fall back to the data already loaded from PHP
+                console.warn('proxy.get API call failed, using page-load proxy cache:', e);
+                PROXIES.forEach(p => {
+                    proxyMap[String(p.proxyid)] = {
+                        address: (p.address || '').trim() || (p.name || '').trim(),
+                        name:    p.name,
+                    };
+                });
+            }
+        }
+
+        // Resolve --server-host per row and attach a human-readable group label
+        validRows.forEach(r => {
+            if (r.proxyId && proxyMap[r.proxyId]) {
+                const px  = proxyMap[r.proxyId];
+                r.serverHost  = px.address || zbxServer;
+                r.serverLabel = px.name
+                    ? 'Via proxy ' + px.name + ' (' + (px.address || r.proxyName) + ')'
+                    : 'Via proxy (' + (r.proxyName || r.proxyId) + ')';
+            } else {
+                r.serverHost  = zbxServer;
+                r.serverLabel = 'Via Zabbix Server' + (zbxServer ? ' (' + zbxServer + ')' : '');
+            }
+        });
+
+        // Group rows by resolved server-host value
+        const groups = {}; // serverHost → { label, rows[] }
+        validRows.forEach(r => {
+            if (!groups[r.serverHost]) {
+                groups[r.serverHost] = { label: r.serverLabel, rows: [] };
+            }
+            groups[r.serverHost].rows.push(r);
+        });
+
+        // Render into modal
+        const body      = document.getElementById('install-modal-body');
+        const groupKeys = Object.keys(groups);
+        const multiGroup = groupKeys.length > 1;
+        body.innerHTML  = '';
+
+        groupKeys.forEach(serverHost => {
+            const group    = groups[serverHost];
+            const hostsStr = group.rows.map(r => `[${r.ip}]='${r.hostname}'`).join(' ');
+
+            const cmd =
+`curl -s '${scriptUrl}' | bash -s -- \\
+  --server-host '${serverHost}' \\
+  --hostname "$(
+    declare -A hosts
+    hosts=(${hostsStr})
+    for ip in $(hostname -I); do
+      [[ -n "\${hosts[\$ip]}" ]] && echo "\${hosts[\$ip]}" && break
+    done || hostname -s
+  )"`;
+
+            if (multiGroup) {
+                const lbl = document.createElement('p');
+                lbl.className   = 'install-modal-group-label';
+                lbl.textContent = group.label + ':';
+                body.appendChild(lbl);
+            }
+
+            const pre = document.createElement('pre');
+            pre.className   = 'install-modal-cmd';
+            pre.textContent = cmd;
+            body.appendChild(pre);
+
+            const copyBtn = document.createElement('button');
+            copyBtn.type      = 'button';
+            copyBtn.className = 'automation-btn install-modal-copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.addEventListener('click', () => copyText(cmd, copyBtn));
+            body.appendChild(copyBtn);
+        });
+
+        openInstallModal();
+    }
+
+    function copyText(text, btn) {
+        const originalLabel = btn.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => { btn.textContent = originalLabel; }, 2000);
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;opacity:0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => { btn.textContent = originalLabel; }, 2000);
+        });
+    }
+
+    function openInstallModal() {
+        document.getElementById('install-modal-overlay').classList.add('is-open');
+    }
+
+    function closeInstallModal() {
+        document.getElementById('install-modal-overlay').classList.remove('is-open');
     }
 
 })();

@@ -66,8 +66,20 @@ if (class_exists('CCsrfTokenHelper')) {
 
     <div class="form-buttons">
         <button type="button" id="btn-add-hosts" class="automation-btn"><?= _('Add Hosts') ?></button>
+        <button type="button" id="btn-gen-install" class="automation-btn automation-btn-secondary"><?= _('Generate Install Commands') ?></button>
     </div>
 
+</div>
+
+<!-- Bulk install commands modal -->
+<div id="install-modal-overlay" class="install-modal-overlay">
+    <div class="install-modal">
+        <div class="install-modal-header">
+            <span><?= _('Install Commands') ?></span>
+            <button type="button" id="btn-install-modal-close" class="install-panel-close">&#10005;</button>
+        </div>
+        <div id="install-modal-body" class="install-modal-body"></div>
+    </div>
 </div>
 
 <!-- Shared floating selector panel -->

@@ -699,3 +699,79 @@
     color: #28a745;
     font-weight: 600;
 }
+
+/* ── Secondary (outline) button variant ──────────────────── */
+.automation-btn-secondary {
+    background: #fff;
+    color: #d40000;
+    border-color: #d40000;
+}
+
+.automation-btn-secondary:hover { background: #fdecea; }
+
+/* ── Bulk install commands modal ─────────────────────────── */
+.install-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+}
+
+.install-modal-overlay.is-open { display: flex; }
+
+.install-modal {
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    max-width: 800px;
+    width: calc(100vw - 32px);
+    max-height: 82vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.install-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: 6px 6px 0 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.install-modal-body {
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.install-modal-group-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #333;
+    margin: 6px 0 0;
+}
+
+.install-modal-cmd {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 0;
+}
+
+.install-modal-copy-btn { align-self: flex-start; }
