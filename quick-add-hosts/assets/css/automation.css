@@ -762,16 +762,48 @@
     margin: 6px 0 0;
 }
 
+.install-cmd-block {
+    position: relative;
+}
+
 .install-modal-cmd {
     background: #1e1e1e;
     color: #d4d4d4;
-    border-radius: 4px;
-    padding: 12px 14px;
+    border-radius: 6px;
+    padding: 14px 16px;
+    padding-right: 80px; /* leave room for the copy button */
     font-family: monospace;
     font-size: 0.8rem;
     white-space: pre;
     overflow-x: auto;
     margin: 0;
+    line-height: 1.55;
 }
 
-.install-modal-copy-btn { align-self: flex-start; }
+.install-modal-copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #bbb;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 3px 11px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.install-modal-copy-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.install-modal-copy-btn.is-copied {
+    color: #4caf50;
+    border-color: rgba(76, 175, 80, 0.5);
+    background: rgba(76, 175, 80, 0.12);
+}

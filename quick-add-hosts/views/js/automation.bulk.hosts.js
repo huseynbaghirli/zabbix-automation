@@ -809,28 +809,37 @@
                 body.appendChild(lbl);
             }
 
+            const block = document.createElement('div');
+            block.className = 'install-cmd-block';
+
             const pre = document.createElement('pre');
             pre.className   = 'install-modal-cmd';
             pre.textContent = cmd;
-            body.appendChild(pre);
 
             const copyBtn = document.createElement('button');
-            copyBtn.type      = 'button';
-            copyBtn.className = 'automation-btn install-modal-copy-btn';
+            copyBtn.type        = 'button';
+            copyBtn.className   = 'install-modal-copy-btn';
             copyBtn.textContent = 'Copy';
             copyBtn.addEventListener('click', () => copyText(cmd, copyBtn));
-            body.appendChild(copyBtn);
+
+            block.appendChild(pre);
+            block.appendChild(copyBtn);
+            body.appendChild(block);
         });
 
         openInstallModal();
     }
 
     function copyText(text, btn) {
-        const originalLabel = btn.textContent;
-        navigator.clipboard.writeText(text).then(() => {
+        function markCopied() {
             btn.textContent = '✓ Copied!';
-            setTimeout(() => { btn.textContent = originalLabel; }, 2000);
-        }).catch(() => {
+            btn.classList.add('is-copied');
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.classList.remove('is-copied');
+            }, 2000);
+        }
+        navigator.clipboard.writeText(text).then(markCopied).catch(() => {
             const ta = document.createElement('textarea');
             ta.value = text;
             ta.style.cssText = 'position:fixed;opacity:0';
@@ -838,8 +847,7 @@
             ta.select();
             document.execCommand('copy');
             document.body.removeChild(ta);
-            btn.textContent = '✓ Copied!';
-            setTimeout(() => { btn.textContent = originalLabel; }, 2000);
+            markCopied();
         });
     }
 
